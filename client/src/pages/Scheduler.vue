@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
+import Loader from "../components/Loader.vue";
 import dayjs from "dayjs";
 import axios from "axios";
 
@@ -7,6 +8,7 @@ const monthDays = ref([]);
 const tasks = ref([]);
 const startDate = ref(dayjs().startOf("month"));
 const errorMessage = ref("");
+const isLoading = ref(false);
 
 onMounted(() => {
   let days = [];
@@ -25,11 +27,13 @@ onMounted(() => {
 
 const getApiData = async () => {
   try {
+    isLoading.value = true;
     const responseData = await axios.get("http://localhost:8000/tasks");
     if (responseData) {
       tasks.value = responseData.data;
       errorMessage.value = "";
       updateTaskData(startDate.value);
+      isLoading.value = false;
     }
   } catch (err) {
     console.log(err);
@@ -84,7 +88,8 @@ const currentMonthAndYear = computed(() => {
 </script>
 
 <template>
-  <div class="container bg-gray-800 mx-auto text-gray-100 p-3">
+  <Loader v-if="isLoading" />
+  <div v-else class="container bg-gray-800 mx-auto text-gray-100 p-3">
     <div
       v-if="errorMessage"
       class="text-center bg-red-600 text-bold text-lg my-2 p-3"

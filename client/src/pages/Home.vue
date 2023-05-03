@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue'
-
+import Loader from '../components/Loader.vue';
 </script>
 
 <template>
@@ -11,6 +11,7 @@ import { ref } from 'vue'
     <p class="text-gray-500 text-lg">
       Vue and Tailwind CSS in action
     </p>
+    <loader />
  </div>
 </template>
 
