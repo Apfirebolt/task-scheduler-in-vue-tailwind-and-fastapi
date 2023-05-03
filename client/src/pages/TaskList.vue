@@ -37,6 +37,7 @@ onMounted(() => {
     <div className="grid sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 px-2 gap-2 my-5">
       <div
         v-for="(item, index) in tasks"
+        :key="index"
         class="shadow-lg rounded-md px-4 py-2 bg-violet-800 text-gray-200 text-semibold text-lg"
       >
         <p>

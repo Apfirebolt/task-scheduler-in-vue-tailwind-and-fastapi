@@ -1,11 +1,12 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import dayjs from "dayjs";
-import axios from 'axios';
+import axios from "axios";
 
 const monthDays = ref([]);
 const tasks = ref([]);
 const startDate = ref(dayjs().startOf("month"));
+const errorMessage = ref("");
 
 onMounted(() => {
   let days = [];
@@ -19,7 +20,7 @@ onMounted(() => {
     days.push(currentObject);
   }
   monthDays.value = days;
-  getApiData()
+  getApiData();
 });
 
 const getApiData = async () => {
@@ -28,8 +29,10 @@ const getApiData = async () => {
     if (responseData) {
       tasks.value = responseData.data;
       errorMessage.value = "";
+      updateTaskData(startDate.value);
     }
   } catch (err) {
+    console.log(err);
     errorMessage.value = "Some error occurred";
   }
 };
@@ -47,7 +50,6 @@ const previousMonth = () => {
 };
 
 const updateTaskData = (month) => {
-
   let days = [];
   let daysInCurrentMonth = month.daysInMonth();
   for (let i = 0; i < daysInCurrentMonth; i += 1) {
@@ -59,17 +61,38 @@ const updateTaskData = (month) => {
     days.push(currentObject);
   }
 
+  if (tasks.value.length) {
+    tasks.value.forEach((item) => {
+      let currentDate = dayjs(item["dueDate"]).format("MMMM D, YYYY");
+      let dateObj = days.find((item) => item.date === currentDate);
+      if (dateObj) {
+        dateObj.tasks.push(item);
+      }
+    });
+  }
+  console.log(days);
   monthDays.value = days;
 };
 
 const currentMonthAndYear = computed(() => {
-  return dayjs(startDate.value).format("MMMM") + ' ' + dayjs(startDate.value).format("YYYY")
-})
-
+  return (
+    dayjs(startDate.value).format("MMMM") +
+    " " +
+    dayjs(startDate.value).format("YYYY")
+  );
+});
 </script>
 
 <template>
   <div class="container bg-gray-800 mx-auto text-gray-100 p-3">
+    <div
+      v-if="errorMessage"
+      class="text-center bg-red-600 text-bold text-lg my-2 p-3"
+    >
+      <p>
+        {{ errorMessage }}
+      </p>
+    </div>
     <h1 class="text-red-400 text-3xl my-3 text-center">SCHEDULER</h1>
     <div class="flex items-center justify-between">
       <button
@@ -78,7 +101,9 @@ const currentMonthAndYear = computed(() => {
       >
         Previous Month
       </button>
-      <p className="font-bold text-2xl text-red-400">{{ currentMonthAndYear }}</p>
+      <p className="font-bold text-2xl text-red-400">
+        {{ currentMonthAndYear }}
+      </p>
       <button
         className="bg-gray-500 hover:bg-gray-900 text-white font-bold py-2 px-4 rounded"
         @click="nextMonth"
@@ -87,12 +112,25 @@ const currentMonthAndYear = computed(() => {
       </button>
     </div>
     <div className="grid grid-cols-7 px-2 gap-2 my-5">
-      <div v-for="(item, index) in monthDays" class="shadow-lg rounded-md px-4 py-2 bg-violet-800 text-gray-200 text-semibold text-lg">
+      <div
+        v-for="(item, index) in monthDays"
+        class="shadow-lg rounded-md px-4 py-2 bg-violet-800 text-gray-200 text-semibold text-lg"
+      >
         <p>
           {{ item.date }}
         </p>
+        <div
+          v-for="(task, index) in item.tasks"
+          class="max-w-sm rounded overflow-hidden shadow-lg bg-gray-800 my-2"
+        >
+          <div class="px-6 py-4">
+            <div class="font-bold text-xl mb-2">{{ task.title }}</div>
+            <p class="text-gray-100 text-base">
+              {{ task.description }}
+            </p>
+          </div>
+        </div>
       </div>
     </div>
-    {{ tasks }}
   </div>
 </template>
