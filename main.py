@@ -3,13 +3,12 @@ from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-import time
 import uvicorn
 
-# from backend.tasks import router as task_router
+from backend.tasks import router as task_router
 
-app = FastAPI(title="Fast API Blog",
-    docs_url="/scrum-master-docs",
+app = FastAPI(title="Fast API Scheduler",
+    docs_url="/docs",
     version="0.0.1")
 
 origins = ["http://localhost:8080",]
@@ -22,7 +21,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# app.include_router(task_router.router)
+app.include_router(task_router.router)
 
 # app.mount("/static", StaticFiles(directory="client/build/static"), name="static")
 

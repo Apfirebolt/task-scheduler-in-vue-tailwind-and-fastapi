@@ -10,7 +10,7 @@ from .import services
 
 router = APIRouter(
     tags=["Task"],
-    prefix='/task'
+    prefix='/tasks'
 )
 
 
