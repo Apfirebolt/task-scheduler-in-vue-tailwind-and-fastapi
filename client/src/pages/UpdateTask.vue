@@ -1,5 +1,6 @@
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import axios from "axios";
 
 const taskData = ref({
@@ -7,42 +8,104 @@ const taskData = ref({
   description: "",
 });
 
-const successMessage = ref('')
+const route = useRoute();
+const router = useRouter();
+const successMessage = ref("");
+const errorMessage = ref("");
 
-const statusChoices = ["To Do", "In Progress", "In Review", "Done"]
+const statusChoices = ["To Do", "In Progress", "In Review", "Done"];
 
 const submitFormData = async () => {
-
   try {
-    const responseData = await axios.post('http://localhost:8000/tasks', taskData.value)
+    const responseData = await axios.patch(
+      "http://localhost:8000/tasks/" + route.params.id,
+      taskData.value
+    );
     if (responseData) {
-      successMessage.value = 'Task created successfully!'
+      successMessage.value = "Task updated successfully!";
       resetSuccessMessage();
     }
   } catch (err) {
-    successMessage.value = ''
+    successMessage.value = "";
   }
-}
+};
+
+const getApiData = async () => {
+  try {
+    const responseData = await axios.get(
+      "http://localhost:8000/tasks/" + route.params.id
+    );
+    if (responseData) {
+      successMessage.value = "Task data retrieved successfully!";
+      taskData.value = responseData.data;
+      resetSuccessMessage();
+    }
+  } catch (err) {
+    successMessage.value = "";
+  }
+};
+
+const deleteTaskHandler = async () => {
+  try {
+    const responseData = await axios.delete(
+      "http://localhost:8000/tasks/" + route.params.id
+    );
+
+    if (responseData) {
+      router.push({
+        name: "TaskList",
+      });
+    }
+  } catch (err) {
+    errorMessage.value = "Some error occurred";
+    resetErrorMessage();
+  }
+};
 
 const resetSuccessMessage = () => {
   setTimeout(() => {
     if (successMessage.value) {
-      successMessage.value = ''
+      successMessage.value = "";
     }
-  }, 5000)
-}
+  }, 5000);
+};
 
+const resetErrorMessage = () => {
+  setTimeout(() => {
+    if (errorMessage.value) {
+      errorMessage.value = "";
+    }
+  }, 3000);
+};
+
+onMounted(() => {
+  getApiData();
+});
 </script>
 
 <template>
   <div class="container bg-gray-200 mx-auto text-gray-100 p-3">
-    <div v-if="successMessage" class="text-center bg-green-600 text-bold text-lg my-2 p-3">
+    <div
+      v-if="successMessage"
+      class="text-center bg-green-600 text-bold text-lg my-2 p-3"
+    >
       <p>
         {{ successMessage }}
       </p>
     </div>
-    <form @submit.prevent="submitFormData" class="md:w-1/2 sm:w-3/4 mx-auto my-3">
-      <p class="text-center text-2xl my-3 text-red-700">ADD TASK</p>
+    <form
+      @submit.prevent="submitFormData"
+      class="md:w-1/2 sm:w-3/4 mx-auto my-3"
+    >
+      <div class="flex items-center justify-between mx-auto my-3">
+        <p class="text-center text-2xl my-3 text-red-700">UPDATE TASK</p>
+        <button
+          @click.prevent="deleteTaskHandler"
+          class="shadow bg-red-300 hover:bg-red-800 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-4 rounded"
+        >
+          Delete Task
+        </button>
+      </div>
       <div class="mb-4">
         <label class="block text-gray-700 text-sm font-bold mb-2" for="title">
           Title
@@ -80,7 +143,13 @@ const resetSuccessMessage = () => {
           aria-label="Default select example"
           v-model="taskData.status"
         >
-        <option v-for="(item, index) in statusChoices" :key="{index}" :value="item">{{ item }}</option>
+          <option
+            v-for="(item, index) in statusChoices"
+            :key="{ index }"
+            :value="item"
+          >
+            {{ item }}
+          </option>
         </select>
       </div>
 
@@ -99,7 +168,7 @@ const resetSuccessMessage = () => {
       <input
         class="shadow bg-purple-500 hover:bg-purple-400 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-4 rounded"
         type="submit"
-        value="Add Task"
+        value="Update Task"
       />
     </form>
   </div>

@@ -2,6 +2,7 @@ import { createWebHistory, createRouter } from "vue-router";
 import Home from "./pages/Home.vue"
 import Scheduler from "./pages/Scheduler.vue";
 import AddTask from "./pages/AddTask.vue";
+import UpdateTask from "./pages/UpdateTask.vue";
 import TaskList from "./pages/TaskList.vue";
 
 const routes = [
@@ -24,6 +25,11 @@ const routes = [
     path: "/tasks",
     name: "TaskList",
     component: TaskList,
+  },
+  {
+    path: "/tasks/:id",
+    name: "UpdateTask",
+    component: UpdateTask,
   },
 ];
 
