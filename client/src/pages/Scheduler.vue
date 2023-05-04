@@ -10,6 +10,7 @@ const tasks = ref([]);
 const startDate = ref(dayjs().startOf("month"));
 const errorMessage = ref("");
 const isLoading = ref(false);
+const showInfo = ref(false);
 
 onMounted(() => {
   AOS.init();
@@ -145,5 +146,13 @@ const currentMonthAndYear = computed(() => {
         </div>
       </div>
     </div>
+
+    <p v-if="showInfo" class="animate__animated animate__fadeInLeft">
+      This is a simple example of how to animate using animate.css and Vue
+    </p>
+
+    <button class="bg-red-600 text-gray-100 rounded-ms px-4 py-2 shadow-md" @click="showInfo = !showInfo">
+      Animate
+    </button>
   </div>
 </template>
