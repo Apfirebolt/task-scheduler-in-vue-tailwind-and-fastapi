@@ -23,18 +23,16 @@ app.add_middleware(
 
 app.include_router(task_router.router)
 
-# app.mount("/static", StaticFiles(directory="client/build/static"), name="static")
+app.mount("/client", StaticFiles(directory="client/dist"), name="static")
 
-# templates = Jinja2Templates(directory="client/dist")
+templates = Jinja2Templates(directory="client/dist")
 
 
-# @app.get("/{full_path:path}")
-# async def serve_react_app(request: Request, full_path: str):
-#     """Serve the react app
-#     `full_path` variable is necessary to serve each possible endpoint with
-#     `index.html` file in order to be compatible with `react-router-dom
-#     """
-#     return templates.TemplateResponse("index.html", {"request": request})
+@app.get("/{full_path:path}")
+async def serve_vue_app(request: Request, full_path: str):
+    """Serve the vue app bootstrapped by Vite
+    """
+    return templates.TemplateResponse("index.html", {"request": request})
 
 
 @app.get("/")
@@ -44,3 +42,6 @@ async def root():
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
+
+    

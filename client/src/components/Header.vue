@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from "vue";
 
-const showSidebar = ref(true);
+const showSidebar = ref(false);
 
 const toggleSidebar = () => {
   showSidebar.value = !showSidebar.value;
