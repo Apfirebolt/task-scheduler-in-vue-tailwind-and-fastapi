@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted } from "vue";
+import AOS from "aos";
 import { useRoute, useRouter } from "vue-router";
 import axios from "axios";
 
@@ -79,6 +80,7 @@ const resetErrorMessage = () => {
 };
 
 onMounted(() => {
+  AOS.init();
   getApiData();
 });
 </script>
@@ -96,6 +98,9 @@ onMounted(() => {
     <form
       @submit.prevent="submitFormData"
       class="md:w-1/2 sm:w-3/4 mx-auto my-3"
+      data-aos="fade-right"
+      data-aos-duration="500"
+      data-aos-ease="ease"
     >
       <div class="flex items-center justify-between mx-auto my-3">
         <p class="text-center text-2xl my-3 text-red-700">UPDATE TASK</p>

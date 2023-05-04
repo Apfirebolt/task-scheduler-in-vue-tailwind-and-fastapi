@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
+import AOS from "aos";
 import Loader from "../components/Loader.vue";
 import dayjs from "dayjs";
 import axios from "axios";
@@ -11,6 +12,7 @@ const errorMessage = ref("");
 const isLoading = ref(false);
 
 onMounted(() => {
+  AOS.init();
   let days = [];
   let daysInCurrentMonth = startDate.value.daysInMonth();
   for (let i = 0; i < daysInCurrentMonth; i += 1) {
@@ -89,7 +91,11 @@ const currentMonthAndYear = computed(() => {
 
 <template>
   <Loader v-if="isLoading" />
-  <div v-else class="container bg-gray-800 mx-auto text-gray-100 p-3">
+  <div
+    v-else
+    class="container bg-gray-800 mx-auto text-gray-100 p-3"
+    data-aos="zoom-in"
+  >
     <div
       v-if="errorMessage"
       class="text-center bg-red-600 text-bold text-lg my-2 p-3"
@@ -116,7 +122,9 @@ const currentMonthAndYear = computed(() => {
         Next Month
       </button>
     </div>
-    <div className="grid sm:grid-cols-2 md:grid-cols:4 lg:grid-cols-7 px-2 gap-2 my-5">
+    <div
+      className="grid sm:grid-cols-2 md:grid-cols:4 lg:grid-cols-7 px-2 gap-2 my-5"
+    >
       <div
         v-for="(item, index) in monthDays"
         class="shadow-lg rounded-md px-4 py-2 bg-violet-800 text-gray-200 text-semibold text-lg"

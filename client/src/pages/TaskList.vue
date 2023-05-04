@@ -1,5 +1,6 @@
 <script setup>
 import { ref, onMounted } from "vue";
+import AOS from 'aos'
 import { useRouter } from "vue-router";
 import axios from "axios";
 import Loader from "../components/Loader.vue";
@@ -33,13 +34,18 @@ const goToTaskDetail = (taskId) => {
 };
 
 onMounted(() => {
+  AOS.init();
   getApiData();
 });
 </script>
 
 <template>
   <Loader v-if="isLoading" />
-  <div v-else class="container bg-gray-800 mx-auto text-gray-100 p-3">
+  <div v-else class="container bg-gray-800 mx-auto text-gray-100 p-3" 
+        data-aos="fade-in"
+        data-aos-duration="500"
+        data-aos-ease="ease"
+        data-aos-delay="400">
     <div
       v-if="errorMessage"
       class="text-center bg-green-600 text-bold text-lg my-2 p-3"

@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "aos": "^2.3.4",
     "axios": "^1.4.0",
     "dayjs": "^1.11.7",
     "vue": "^3.2.47",

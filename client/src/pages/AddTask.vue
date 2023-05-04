@@ -1,6 +1,7 @@
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import axios from "axios";
+import AOS from "aos";
 
 const taskData = ref({
   title: "",
@@ -10,6 +11,10 @@ const taskData = ref({
 const successMessage = ref('')
 
 const statusChoices = ["To Do", "In Progress", "In Review", "Done"]
+
+onMounted(() => {
+  AOS.init();
+})
 
 const submitFormData = async () => {
 
@@ -41,7 +46,10 @@ const resetSuccessMessage = () => {
         {{ successMessage }}
       </p>
     </div>
-    <form @submit.prevent="submitFormData" class="md:w-1/2 sm:w-3/4 mx-auto my-3">
+    <form @submit.prevent="submitFormData" class="md:w-1/2 sm:w-3/4 mx-auto my-3" 
+        data-aos="fade-left"
+        data-aos-duration="500"
+        data-aos-ease="ease">
       <p class="text-center text-2xl my-3 text-red-700">ADD TASK</p>
       <div class="mb-4">
         <label class="block text-gray-700 text-sm font-bold mb-2" for="title">
