@@ -28,11 +28,11 @@ app.mount("/client", StaticFiles(directory="client/dist"), name="static")
 templates = Jinja2Templates(directory="client/dist")
 
 
-@app.get("/{full_path:path}")
-async def serve_vue_app(request: Request, full_path: str):
-    """Serve the vue app bootstrapped by Vite
-    """
-    return templates.TemplateResponse("index.html", {"request": request})
+# @app.get("/{full_path:path}")
+# async def serve_vue_app(request: Request, full_path: str):
+#     """Serve the vue app bootstrapped by Vite
+#     """
+#     return templates.TemplateResponse("index.html", {"request": request})
 
 
 @app.get("/")
