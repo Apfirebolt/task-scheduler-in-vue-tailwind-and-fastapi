@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, status
+from fastapi import FastAPI, BackgroundTasks, Request, status
 from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
@@ -23,16 +23,28 @@ app.add_middleware(
 
 app.include_router(task_router.router)
 
+
+def write_notification(email: str, message=""):
+    with open("log.txt", mode="w") as email_file:
+        content = f"notification for {email}: {message}"
+        email_file.write(content)
+
+
+@app.post("/send-notification/{email}")
+async def send_notification(email: str, background_tasks: BackgroundTasks):
+    background_tasks.add_task(write_notification, email, message="some notification from the back-ground task")
+    return {"message": "Notification sent in the background"}
+
 app.mount("/client", StaticFiles(directory="client/dist"), name="static")
 
 templates = Jinja2Templates(directory="client/dist")
 
 
-# @app.get("/{full_path:path}")
-# async def serve_vue_app(request: Request, full_path: str):
-#     """Serve the vue app bootstrapped by Vite
-#     """
-#     return templates.TemplateResponse("index.html", {"request": request})
+@app.get("/{full_path:path}")
+async def serve_vue_app(request: Request, full_path: str):
+    """Serve the vue app bootstrapped by Vite
+    """
+    return templates.TemplateResponse("index.html", {"request": request})
 
 
 @app.get("/")
