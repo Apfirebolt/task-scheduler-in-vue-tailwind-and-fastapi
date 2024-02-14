@@ -4,6 +4,7 @@ import Scheduler from "./pages/Scheduler.vue";
 import AddTask from "./pages/AddTask.vue";
 import UpdateTask from "./pages/UpdateTask.vue";
 import TaskList from "./pages/TaskList.vue";
+import TaskTable from "./pages/TaskTable.vue";
 import Scroll from "./pages/Scroll.vue";
 
 const routes = [
@@ -26,6 +27,11 @@ const routes = [
     path: "/tasks",
     name: "TaskList",
     component: TaskList,
+  },
+  {
+    path: "/task-table",
+    name: "TaskTable",
+    component: TaskTable,
   },
   {
     path: "/tasks/:id",

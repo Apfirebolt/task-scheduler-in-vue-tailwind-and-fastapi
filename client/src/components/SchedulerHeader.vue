@@ -56,31 +56,6 @@ const previousMonth = () => {
   updateTaskData(previousMonthValue);
 };
 
-const updateTaskData = (month) => {
-  let days = [];
-  let daysInCurrentMonth = month.daysInMonth();
-  for (let i = 0; i < daysInCurrentMonth; i += 1) {
-    let currentDate = startDate.value.add(i, "day");
-    let currentObject = {
-      date: currentDate.format("MMMM D, YYYY"),
-      tasks: [],
-    };
-    days.push(currentObject);
-  }
-
-  if (tasks.value.length) {
-    tasks.value.forEach((item) => {
-      let currentDate = dayjs(item["dueDate"]).format("MMMM D, YYYY");
-      let dateObj = days.find((item) => item.date === currentDate);
-      if (dateObj) {
-        dateObj.tasks.push(item);
-      }
-    });
-  }
-  console.log(days);
-  monthDays.value = days;
-};
-
 const currentMonthAndYear = computed(() => {
   return (
     dayjs(startDate.value).format("MMMM") +
@@ -91,22 +66,7 @@ const currentMonthAndYear = computed(() => {
 </script>
 
 <template>
-  <Loader v-if="isLoading" />
-  <div
-    v-else
-    class="container bg-gray-800 mx-auto text-gray-100 p-3"
-    data-aos="zoom-in"
-  >
-    <div
-      v-if="errorMessage"
-      class="text-center bg-red-600 text-bold text-lg my-2 p-3"
-    >
-      <p>
-        {{ errorMessage }}
-      </p>
-    </div>
-    <h1 class="text-red-400 text-3xl my-3 text-center">SCHEDULER</h1>
-    <div class="flex items-center justify-between">
+  <div class="flex items-center justify-between">
       <button
         className="bg-gray-500 hover:bg-gray-900 text-white font-bold py-2 px-4 rounded"
         @click="previousMonth"
@@ -123,28 +83,4 @@ const currentMonthAndYear = computed(() => {
         Next Month
       </button>
     </div>
-    <div
-      className="grid sm:grid-cols-2 md:grid-cols:4 lg:grid-cols-7 px-2 gap-2 my-5"
-    >
-      <div
-        v-for="(item, index) in monthDays"
-        class="shadow-lg rounded-md px-4 py-2 bg-violet-800 text-gray-200 text-semibold text-lg"
-      >
-        <p>
-          {{ item.date }}
-        </p>
-        <div
-          v-for="(task, index) in item.tasks"
-          class="max-w-sm rounded overflow-hidden shadow-lg bg-gray-800 my-2"
-        >
-          <div class="px-6 py-4">
-            <div class="font-bold text-xl mb-2">{{ task.title }}</div>
-            <p class="text-gray-100 text-base">
-              {{ task.description }}
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 </template>

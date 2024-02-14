@@ -166,6 +166,11 @@ const toggleSidebar = () => {
         >
           <router-link to="/tasks">Tasks</router-link>
         </li>
+        <li
+          class="p-4 border-b-2 border-green-500 border-opacity-0 hover:border-opacity-100 hover:text-green-500 duration-200 cursor-pointer"
+        >
+          <router-link to="/task-table">Task Table</router-link>
+        </li>
       </ul>
       <ul class="flex items-center">
         <li
