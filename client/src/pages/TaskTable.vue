@@ -11,6 +11,8 @@ const errorMessage = ref("");
 const title = ref("");
 const description = ref("");
 const isLoading = ref(false);
+const isSorted = ref(false);
+const sortingParam = ref("");
 
 const getApiData = async () => {
   try {
@@ -26,44 +28,18 @@ const getApiData = async () => {
   }
 };
 
-const filteredTasks = computed(() => {
-  return tasks.value.filter((task) => {
+let filteredTasks = computed(() => {
+  let filtered = tasks.value.filter((task) => {
     return (
       task.title.toLowerCase().includes(title.value.toLowerCase()) &&
       task.description.toLowerCase().includes(description.value.toLowerCase())
     );
   });
+  if (isSorted.value) {
+    return filtered.sort((a, b) => a[sortingParam.value].localeCompare(b[sortingParam.value]));
+  }
+  return filtered;
 });
-
-// sort tasks by title
-const sortTasksByTitle = () => {
-  console.log("sortTasksByTitle");
-  filteredTasks.value.sort((a, b) => {
-    if (a.title < b.title) {
-      return -1;
-    }
-    if (a.title > b.title) {
-      return 1;
-    }
-    return 0;
-  });
-  console.log("titleTasks are here ", filteredTasks.value);
-};
-
-// sort tasks by description
-const sortTasksByDescription = () => {
-  console.log("sortTasksByDescription");
-  filteredTasks.value.sort((a, b) => {
-    if (a.description < b.description) {
-      return -1;
-    }
-    if (a.description > b.description) {
-      return 1;
-    }
-    return 0;
-  });
-  console.log("filteredTasks are here ", filteredTasks.value);
-};
 
 const goToTaskDetail = (taskId) => {
   router.push({
@@ -72,6 +48,11 @@ const goToTaskDetail = (taskId) => {
       id: taskId,
     },
   });
+};
+
+const sortByParam = (param) => {
+  sortingParam.value = param;
+  isSorted.value = !isSorted.value;
 };
 
 onMounted(() => {
@@ -110,7 +91,7 @@ onMounted(() => {
                   <th scope="col" class="px-6 py-4">
                     Title
                     <svg
-                      @click="sortTasksByTitle"
+                      @click="sortByParam('title')"
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
                       viewBox="0 0 24 24"
@@ -128,7 +109,7 @@ onMounted(() => {
                   <th scope="col" class="px-6 py-4">
                     Description
                     <svg
-                      @click="sortTasksByDescription"
+                      @click="sortByParam('description')"
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
                       viewBox="0 0 24 24"
@@ -146,6 +127,7 @@ onMounted(() => {
                   <th scope="col" class="px-6 py-4">
                     Due Date
                     <svg
+                      @click="sortByParam('dueDate')"
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
                       viewBox="0 0 24 24"
