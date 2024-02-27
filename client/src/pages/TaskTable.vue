@@ -11,8 +11,11 @@ const errorMessage = ref("");
 const title = ref("");
 const description = ref("");
 const isLoading = ref(false);
-const isSorted = ref(false);
 const sortingParam = ref("");
+const sortingParams = ref({
+  name: "",
+  reverse: false,
+});
 
 const getApiData = async () => {
   try {
@@ -35,10 +38,13 @@ let filteredTasks = computed(() => {
       task.description.toLowerCase().includes(description.value.toLowerCase())
     );
   });
-  if (isSorted.value) {
-    return filtered.sort((a, b) => a[sortingParam.value].localeCompare(b[sortingParam.value]));
-  }
-  return filtered;
+  return filtered.sort((a, b) => {
+    if (sortingParams.value["reverse"]) {
+      return a[sortingParam.value] > b[sortingParam.value] ? 1 : -1;
+    } else {
+      return a[sortingParam.value] > b[sortingParam.value] ? -1 : 1;
+    }
+  });
 });
 
 const goToTaskDetail = (taskId) => {
@@ -52,7 +58,18 @@ const goToTaskDetail = (taskId) => {
 
 const sortByParam = (param) => {
   sortingParam.value = param;
-  isSorted.value = !isSorted.value;
+
+  if (sortingParams.value["name"] === param) {
+    sortingParams.value = {
+      name: param,
+      reverse: !sortingParams.value["reverse"],
+    };
+  } else {
+    sortingParams.value = {
+      name: param,
+      reverse: false,
+    };
+  }
 };
 
 onMounted(() => {
@@ -78,6 +95,9 @@ onMounted(() => {
       <p>
         {{ errorMessage }}
       </p>
+      <p>
+        {{ sortByParams }}
+      </p>
     </div>
     <h1 class="text-red-400 text-3xl my-3 text-center">TASKS Table</h1>
     <div class="flex flex-col">
@@ -88,10 +108,9 @@ onMounted(() => {
               <thead class="border-b font-medium dark:border-neutral-500">
                 <tr>
                   <th scope="col" class="px-6 py-4">#</th>
-                  <th scope="col" class="px-6 py-4">
+                  <th scope="col" class="px-6 py-4" @click="sortByParam('title')">
                     Title
-                    <svg
-                      @click="sortByParam('title')"
+                    <svg v-if="sortingParams.name === 'title' && sortingParams.reverse"
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
                       viewBox="0 0 24 24"
@@ -105,11 +124,30 @@ onMounted(() => {
                         d="m4.5 5.25 7.5 7.5 7.5-7.5m-15 6 7.5 7.5 7.5-7.5"
                       />
                     </svg>
+
+                    <svg v-if="sortingParams.name === 'title' && !sortingParams.reverse"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke-width="1.5"
+                      stroke="currentColor"
+                      class="w-6 h-6"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="m4.5 18.75 7.5-7.5 7.5 7.5"
+                      />
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="m4.5 12.75 7.5-7.5 7.5 7.5"
+                      />
+                    </svg>
                   </th>
-                  <th scope="col" class="px-6 py-4">
+                  <th scope="col" class="px-6 py-4" @click="sortByParam('description')">
                     Description
-                    <svg
-                      @click="sortByParam('description')"
+                    <svg v-if="sortingParams.name === 'description' && sortingParams.reverse"
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
                       viewBox="0 0 24 24"
@@ -121,6 +159,26 @@ onMounted(() => {
                         stroke-linecap="round"
                         stroke-linejoin="round"
                         d="m4.5 5.25 7.5 7.5 7.5-7.5m-15 6 7.5 7.5 7.5-7.5"
+                      />
+                    </svg>
+
+                    <svg v-if="sortingParams.name === 'description' && !sortingParams.reverse"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke-width="1.5"
+                      stroke="currentColor"
+                      class="w-6 h-6"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="m4.5 18.75 7.5-7.5 7.5 7.5"
+                      />
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="m4.5 12.75 7.5-7.5 7.5 7.5"
                       />
                     </svg>
                   </th>
