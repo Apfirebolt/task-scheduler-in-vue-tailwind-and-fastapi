@@ -1,4 +1,5 @@
 <script setup>
+import { cookies } from 'vue-cookies'
 import { ref, onMounted } from "vue";
 import axios from "axios";
 import AOS from "aos";
@@ -9,6 +10,23 @@ const taskData = ref({
 });
 
 const successMessage = ref('')
+
+function getCookie(name) {
+  const value = `; `;
+  const parts = document.cookie.split(value);
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i].split('=');
+    if (part[0].trim() === name) {
+      return part[1].trim();
+    }
+  }
+  return null;
+}
+
+// Example usage
+const cookieValue = getCookie('fakesession');
+
+console.log('Cookie : ', cookieValue);
 
 const statusChoices = ["To Do", "In Progress", "In Review", "Done"]
 

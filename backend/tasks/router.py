@@ -1,5 +1,6 @@
 from typing import List
 from fastapi import APIRouter, Depends, status, Response, Request
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from backend import db
@@ -12,6 +13,15 @@ router = APIRouter(
     tags=["Task"],
     prefix='/tasks'
 )
+
+# Send a cookie here
+@router.get("/cookie")
+def create_cookie():
+    content = {"message": "Come to the dark side, we have cookies"}
+    response = JSONResponse(content=content)
+    response.set_cookie(key="fakesession", value="fake-cookie-session-value")
+    return response
+
 
 
 @router.post('/', status_code=status.HTTP_201_CREATED,
