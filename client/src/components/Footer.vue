@@ -7,7 +7,7 @@
       class="flex items-center justify-center border-b-2 border-neutral-200 p-6 dark:border-neutral-500 lg:justify-between"
     >
       <div class="mr-12 hidden lg:block">
-        <span>© 2023 Copyright:</span>
+        <span class="bg-mint-500">© {{ currentYear }} Copyright:</span>
         <a
           class="font-semibold text-neutral-600 dark:text-neutral-400"
           href="https://tailwind-elements.com/"
@@ -94,3 +94,8 @@
     </div>
   </footer>
 </template>
+
+<script setup>
+import { ref } from 'vue';
+const currentYear = ref(new Date().getFullYear());
+</script>

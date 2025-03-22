@@ -99,7 +99,7 @@ onMounted(() => {
         {{ sortByParams }}
       </p>
     </div>
-    <h1 class="text-red-400 text-3xl my-3 text-center">TASKS Table</h1>
+    <h1 class="text-red-400 text-3xl my-3 text-center">TASKS</h1>
     <div class="flex flex-col">
       <div class="overflow-x-auto sm:-mx-6 lg:-mx-8">
         <div class="inline-block min-w-full py-2 sm:px-6 lg:px-8">

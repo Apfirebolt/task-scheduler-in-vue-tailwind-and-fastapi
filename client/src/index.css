@@ -1,4 +1,6 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
+// add custom tailwind colors
+@theme {
+  --color-mint-500: oklch(0.72 0.11 178);
+}
