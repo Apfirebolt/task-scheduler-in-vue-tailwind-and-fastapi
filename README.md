@@ -29,15 +29,18 @@ The style might be a subject to change in the future for this project. But, as o
 
 Add Task form.
 
-![alt text](./screenshots/add_task.png)
+![alt text](./screenshots/1.png)
 
 Schduler which displays tasks in a calendar form.
 
-![alt text](./screenshots/scheduler.png)
+![alt text](./screenshots/2.png)
 
-List of all tasks
+List of all tasks, calendar view and table view
 
-![alt text](./screenshots/tasks.png)
+![alt text](./screenshots/3.png)
+
+![alt text](./screenshots/4.png)
+
 
 Mobile menu view, a sidebar opens which displays menu items on smaller screens.
 

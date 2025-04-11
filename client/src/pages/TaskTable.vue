@@ -82,7 +82,7 @@ onMounted(() => {
   <Loader v-if="isLoading" />
   <div
     v-else
-    class="container bg-gray-100 mx-auto text-gray-800 p-3"
+    class="container bg-light mx-auto text-dark p-3"
     data-aos="fade-in"
     data-aos-duration="500"
     data-aos-ease="ease"
@@ -99,7 +99,7 @@ onMounted(() => {
         {{ sortByParams }}
       </p>
     </div>
-    <h1 class="text-red-400 text-3xl my-3 text-center">TASKS</h1>
+    <h1 class="text-tertiary bg-white py-2 text-3xl my-3 text-center">TASKS</h1>
     <div class="flex flex-col">
       <div class="overflow-x-auto sm:-mx-6 lg:-mx-8">
         <div class="inline-block min-w-full py-2 sm:px-6 lg:px-8">
@@ -182,7 +182,7 @@ onMounted(() => {
                       />
                     </svg>
                   </th>
-                  <th scope="col" class="px-6 py-4">
+                  <th scope="col" class="px-6 py-4 flex justify-around">
                     Due Date
                     <svg
                       @click="sortByParam('dueDate')"
