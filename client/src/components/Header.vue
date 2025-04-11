@@ -120,7 +120,7 @@ const toggleSidebar = () => {
     </div>
   </transition>
   <header
-    class="header top-0 bg-primary shadow-md flex items-center justify-between px-8 py-02"
+    class="header top-0 bg-gradient-to-r from-primary to-secondary shadow-md flex items-center justify-between px-8 py-02"
   >
     <!-- logo -->
     <h1 class="w-3/12 text-light">

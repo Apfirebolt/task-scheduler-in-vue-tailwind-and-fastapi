@@ -63,8 +63,11 @@ const resetSuccessMessage = () => {
 </script>
 
 <template>
-  <div class="container bg-gray-200 mx-auto text-gray-100">
-    <div v-if="successMessage" class="text-center bg-green-600 text-bold text-lg my-2 p-3">
+  <div 
+    class="container bg-gray-200 mx-auto text-gray-100" 
+    style="background-image: url('https://storage.pixteller.com/designs/designs-images/2019-03-27/05/simple-background-backgrounds-passion-simple-1-5c9b95c3a34f9.png'); background-size: cover; background-position: center;"
+  >
+    <div v-if="successMessage" class="text-center bg-success text-light text-bold text-lg my-2 p-3">
       <p>
         {{ successMessage }}
       </p>
@@ -75,7 +78,7 @@ const resetSuccessMessage = () => {
         data-aos-ease="ease">
       <p class="text-center bg-tertiary text-2xl my-3 p-2 text-white">ADD TASK</p>
       <div class="mb-4">
-        <label class="block text-gray-700 text-sm font-bold mb-2" for="title">
+        <label class="block text-dark font-bold bg-light px-2 py-1 text-center" for="title">
           Title
         </label>
         <div class="relative">
@@ -94,7 +97,7 @@ const resetSuccessMessage = () => {
       </div>
       <div class="mb-4">
         <label
-          class="block text-gray-700 text-sm font-bold mb-2"
+          class="block text-dark font-bold bg-light px-2 py-1 text-center"
           for="description"
         >
           Description
@@ -114,12 +117,12 @@ const resetSuccessMessage = () => {
           />
         </div>
       </div>
-      <div class="mb-4">
-        <label class="block text-gray-700 text-sm font-bold mb-2" for="status">
+      <div class="mb-4 flex justify-between items-center">
+        <label class="block text-dark font-bold bg-light px-2 py-1 text-center w-1/2" for="status">
           Status
         </label>
         <select
-          class="form-select appearance-none block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding bg-no-repeat border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none"
+          class="form-select appearance-none block w-1/2 px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding bg-no-repeat border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none"
           aria-label="Default select example"
           v-model="taskData.status"
         >
@@ -127,12 +130,12 @@ const resetSuccessMessage = () => {
         </select>
       </div>
 
-      <div class="mb-4">
-        <label class="block text-gray-700 text-sm font-bold mb-2" for="dueDate">
+      <div class="mb-4 flex justify-between items-center">
+        <label class="block text-dark font-bold bg-light px-2 py-1 text-center w-1/2" for="dueDate">
           Due Date
         </label>
         <input
-          class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          class="shadow appearance-none border rounded w-1/2 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
           id="dueDate"
           type="date"
           placeholder="Select Due Date"

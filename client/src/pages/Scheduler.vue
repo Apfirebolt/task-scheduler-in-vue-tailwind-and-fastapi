@@ -96,6 +96,7 @@ const currentMonthAndYear = computed(() => {
     v-else
     class="container bg-light mx-auto text-dark p-3"
     data-aos="zoom-in"
+    style="background-image: url('https://storage.pixteller.com/designs/designs-images/2019-03-27/05/simple-background-backgrounds-passion-simple-1-5c9b95c3a34f9.png'); background-size: cover; background-position: center;"
   >
     <div
       v-if="errorMessage"
@@ -108,7 +109,7 @@ const currentMonthAndYear = computed(() => {
     <h1 class="text-red-400 text-3xl my-3 text-center">SCHEDULER</h1>
     <div class="flex items-center justify-between">
       <button
-        className="bg-gray-500 hover:bg-gray-900 text-white font-bold py-2 px-4 rounded"
+        className="bg-secondary hover:bg-gray-900 text-white font-bold py-2 px-4 rounded"
         @click="previousMonth"
       >
         Previous Month
@@ -117,7 +118,7 @@ const currentMonthAndYear = computed(() => {
         {{ currentMonthAndYear }}
       </p>
       <button
-        className="bg-gray-500 hover:bg-gray-900 text-white font-bold py-2 px-4 rounded"
+        className="bg-secondary hover:bg-gray-900 text-white font-bold py-2 px-4 rounded"
         @click="nextMonth"
       >
         Next Month

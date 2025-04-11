@@ -42,14 +42,14 @@ onMounted(() => {
 
 <template>
   <Loader v-if="isLoading" />
-  <div v-else class="container bg-gray-800 mx-auto text-gray-100 p-3" 
+  <div v-else class="container bg-dark mx-auto text-gray-100 p-3" 
         data-aos="fade-in"
         data-aos-duration="500"
         data-aos-ease="ease"
         data-aos-delay="400">
     <div
       v-if="errorMessage"
-      class="text-center bg-green-600 text-bold text-lg my-2 p-3"
+      class="text-center bg-success text-light text-bold text-lg my-2 p-3"
     >
       <p>
         {{ errorMessage }}
@@ -63,7 +63,7 @@ onMounted(() => {
       <div
         v-for="(item, index) in tasks"
         :key="index"
-        class="shadow-lg text-center rounded-md px-4 py-2 bg-violet-800 hover:cursor-pointer text-gray-200 text-semibold text-lg"
+        class="shadow-lg text-center rounded-md px-4 py-2 bg-secondary hover:cursor-pointer text-light text-semibold text-lg"
         @click="goToTaskDetail(item.id)"
       >
         <p class="my-2 font-bold">

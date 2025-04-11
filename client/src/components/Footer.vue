@@ -1,7 +1,7 @@
 <template>
   <!-- Footer container -->
   <footer
-    class="bg-primary text-center text-white dark:bg-neutral-600 dark:text-neutral-200 lg:text-left mt-3 py-8"
+    class="bg-gradient-to-r from-primary to-secondary text-center text-white dark:bg-neutral-600 dark:text-neutral-200 lg:text-left mt-3 py-8"
   >
     <div
       class="flex items-center justify-center p-6 dark:border-neutral-500 lg:justify-between"

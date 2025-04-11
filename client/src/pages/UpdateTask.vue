@@ -91,7 +91,9 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="container bg-gray-200 mx-auto text-gray-100">
+  <div class="container mx-auto text-light"
+    style="background-image: url('https://storage.pixteller.com/designs/designs-images/2019-03-27/05/simple-background-backgrounds-passion-simple-1-5c9b95c3a34f9.png'); background-size: cover; background-position: center;"
+  >
     <div
       v-if="successMessage"
       class="text-center bg-success text-light text-bold text-lg my-2 p-3"
@@ -117,7 +119,7 @@ onMounted(() => {
         </button>
       </div>
       <div class="mb-4">
-        <label class="block text-gray-700 text-sm font-bold mb-2" for="title">
+        <label class="block text-dark font-bold bg-light px-2 py-1 text-center" for="title">
           Title
         </label>
         <div class="relative">
@@ -136,7 +138,7 @@ onMounted(() => {
       </div>
       <div class="mb-4">
         <label
-          class="block text-gray-700 text-sm font-bold mb-2"
+          class="block text-dark font-bold bg-light px-2 py-1 text-center"
           for="description"
         >
           Description
@@ -157,7 +159,7 @@ onMounted(() => {
         </div>
       </div>
       <div class="mb-4">
-        <label class="block text-gray-700 text-sm font-bold mb-2" for="status">
+        <label class="block text-dark font-bold bg-light px-2 py-1 text-center" for="status">
           Status
         </label>
         <select
@@ -176,7 +178,7 @@ onMounted(() => {
       </div>
 
       <div class="mb-4">
-        <label class="block text-gray-700 text-sm font-bold mb-2" for="dueDate">
+        <label class="block text-dark font-bold bg-light px-2 py-1 text-center" for="dueDate">
           Due Date
         </label>
         <input
