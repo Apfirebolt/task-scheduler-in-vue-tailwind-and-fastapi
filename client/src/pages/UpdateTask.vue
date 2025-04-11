@@ -3,6 +3,9 @@ import { ref, onMounted } from "vue";
 import AOS from "aos";
 import { useRoute, useRouter } from "vue-router";
 import axios from "axios";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome"
+import { library } from '@fortawesome/fontawesome-svg-core';
+import { faTasks, faPenAlt } from '@fortawesome/free-solid-svg-icons';
 
 const taskData = ref({
   title: "",
@@ -30,6 +33,8 @@ const submitFormData = async () => {
     successMessage.value = "";
   }
 };
+
+library.add(faTasks, faPenAlt);
 
 const getApiData = async () => {
   try {
@@ -86,10 +91,10 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="container bg-gray-200 mx-auto text-gray-100 p-3">
+  <div class="container bg-gray-200 mx-auto text-gray-100">
     <div
       v-if="successMessage"
-      class="text-center bg-green-600 text-bold text-lg my-2 p-3"
+      class="text-center bg-success text-light text-bold text-lg my-2 p-3"
     >
       <p>
         {{ successMessage }}
@@ -102,11 +107,11 @@ onMounted(() => {
       data-aos-duration="500"
       data-aos-ease="ease"
     >
-      <div class="flex items-center justify-between mx-auto my-3">
-        <p class="text-center text-2xl my-3 text-red-700">UPDATE TASK</p>
+      <div class="flex items-center justify-between mx-auto my-3 px-2 bg-primary">
+        <p class="text-center text-2xl my-3 text-light">UPDATE TASK</p>
         <button
           @click.prevent="deleteTaskHandler"
-          class="shadow bg-red-300 hover:bg-red-800 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-4 rounded"
+          class="shadow bg-secondary hover:bg-red-800 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-4 rounded"
         >
           Delete Task
         </button>
@@ -115,13 +120,19 @@ onMounted(() => {
         <label class="block text-gray-700 text-sm font-bold mb-2" for="title">
           Title
         </label>
-        <input
-          class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          id="title"
-          type="text"
-          placeholder="Task Title"
-          v-model="taskData.title"
-        />
+        <div class="relative">
+          <input
+            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline pr-10"
+            id="title"
+            type="text"
+            placeholder="Task Title"
+            v-model="taskData.title"
+          />
+          <FontAwesomeIcon
+            :icon="['fas', 'tasks']"
+            class="absolute top-2 right-2 text-primary"
+          />
+        </div>
       </div>
       <div class="mb-4">
         <label
@@ -130,14 +141,20 @@ onMounted(() => {
         >
           Description
         </label>
-        <textarea
-          class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          id="description"
-          type="text"
-          placeholder="Task Description"
-          rows="10"
-          v-model="taskData.description"
-        ></textarea>
+        <div class="relative">
+          <textarea
+            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline pr-10"
+            id="description"
+            type="text"
+            placeholder="Task Description"
+            rows="10"
+            v-model="taskData.description"
+          ></textarea>
+          <FontAwesomeIcon
+            :icon="['fas', 'pen-alt']"
+            class="absolute top-2 right-2 text-primary"
+          />
+        </div>
       </div>
       <div class="mb-4">
         <label class="block text-gray-700 text-sm font-bold mb-2" for="status">
@@ -171,7 +188,7 @@ onMounted(() => {
         />
       </div>
       <input
-        class="shadow bg-purple-500 hover:bg-purple-400 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-4 rounded"
+        class="shadow bg-secondary hover:bg-primary transition-all duration-300 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-4 rounded my-3"
         type="submit"
         value="Update Task"
       />

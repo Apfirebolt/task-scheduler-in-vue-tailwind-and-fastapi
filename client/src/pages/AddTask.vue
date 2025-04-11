@@ -73,7 +73,7 @@ const resetSuccessMessage = () => {
         data-aos="fade-left"
         data-aos-duration="500"
         data-aos-ease="ease">
-      <p class="text-center bg-primary text-2xl my-3 p-2 text-white">ADD TASK</p>
+      <p class="text-center bg-tertiary text-2xl my-3 p-2 text-white">ADD TASK</p>
       <div class="mb-4">
         <label class="block text-gray-700 text-sm font-bold mb-2" for="title">
           Title

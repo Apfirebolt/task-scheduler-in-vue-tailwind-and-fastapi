@@ -131,27 +131,27 @@ const toggleSidebar = () => {
     <nav class="nav font-semibold text-lg text-light">
       <ul class="md:flex items-center hidden">
         <li
-          class="p-4 border-b-2 border-green-500 border-opacity-0 hover:border-opacity-100 hover:text-green-500 duration-200 cursor-pointer active"
+          class="p-4 border-b-2 border-success border-opacity-0 hover:border-opacity-100 hover:text-success duration-200 cursor-pointer active"
         >
           <router-link to="/">Home</router-link>
         </li>
         <li
-          class="p-4 border-b-2 border-green-500 border-opacity-0 hover:border-opacity-100 hover:text-green-500 duration-200 cursor-pointer"
+          class="p-4 border-b-2 border-success border-opacity-0 hover:border-opacity-100 hover:text-success duration-200 cursor-pointer"
         >
           <router-link to="/scheduler">Scheduler</router-link>
         </li>
         <li
-          class="p-4 border-b-2 border-green-500 border-opacity-0 hover:border-opacity-100 hover:text-green-500 duration-200 cursor-pointer"
+          class="p-4 border-b-2 border-success border-opacity-0 hover:border-opacity-100 hover:text-success duration-200 cursor-pointer"
         >
           <router-link to="/add">Add Task</router-link>
         </li>
         <li
-          class="p-4 border-b-2 border-green-500 border-opacity-0 hover:border-opacity-100 hover:text-green-500 duration-200 cursor-pointer"
+          class="p-4 border-b-2 border-success border-opacity-0 hover:border-opacity-100 hover:text-success duration-200 cursor-pointer"
         >
           <router-link to="/tasks">Tasks</router-link>
         </li>
         <li
-          class="p-4 border-b-2 border-green-500 border-opacity-0 hover:border-opacity-100 hover:text-green-500 duration-200 cursor-pointer"
+          class="p-4 border-b-2 border-success border-opacity-0 hover:border-opacity-100 hover:text-success duration-200 cursor-pointer"
         >
           <router-link to="/task-table">Task Table</router-link>
         </li>
@@ -159,7 +159,7 @@ const toggleSidebar = () => {
       <ul class="flex items-center">
         <li
           @click="toggleSidebar"
-          class="p-4 border-b-2 md:hidden border-green-500 border-opacity-0 hover:border-opacity-100 hover:text-green-500 duration-200 cursor-pointer active"
+          class="p-4 border-b-2 md:hidden border-success border-opacity-0 hover:border-opacity-100 hover:text-success duration-200 cursor-pointer active"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

@@ -94,12 +94,12 @@ const currentMonthAndYear = computed(() => {
   <Loader v-if="isLoading" />
   <div
     v-else
-    class="container bg-gray-800 mx-auto text-gray-100 p-3"
+    class="container bg-light mx-auto text-dark p-3"
     data-aos="zoom-in"
   >
     <div
       v-if="errorMessage"
-      class="text-center bg-red-600 text-bold text-lg my-2 p-3"
+      class="text-center bg-tertiary text-bold text-lg my-2 p-3"
     >
       <p>
         {{ errorMessage }}
@@ -128,7 +128,7 @@ const currentMonthAndYear = computed(() => {
     >
       <div
         v-for="(item, index) in monthDays"
-        class="shadow-lg rounded-md px-4 py-2 bg-violet-800 text-gray-200 text-semibold text-lg"
+        class="shadow-lg rounded-md px-4 py-2 bg-primary text-light text-semibold text-lg"
       >
         <p>
           {{ item.date }}

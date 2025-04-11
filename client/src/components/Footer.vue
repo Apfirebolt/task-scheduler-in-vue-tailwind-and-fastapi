@@ -1,25 +1,25 @@
 <template>
   <!-- Footer container -->
   <footer
-    class="bg-neutral-100 text-center text-neutral-600 dark:bg-neutral-600 dark:text-neutral-200 lg:text-left mt-3"
+    class="bg-primary text-center text-white dark:bg-neutral-600 dark:text-neutral-200 lg:text-left mt-3 py-8"
   >
     <div
-      class="flex items-center justify-center border-b-2 border-neutral-200 p-6 dark:border-neutral-500 lg:justify-between"
+      class="flex items-center justify-center p-6 dark:border-neutral-500 lg:justify-between"
     >
       <div class="mr-12 hidden lg:block">
         <span class="bg-mint-500">© {{ currentYear }} Copyright:</span>
         <a
-          class="font-semibold text-neutral-600 dark:text-neutral-400"
+          class="font-semibold text-light dark:text-neutral-400"
           href="https://tailwind-elements.com/"
           > Fast Scheduler </a
         >
       </div>
       <!-- Social network icons container -->
       <div class="flex justify-center">
-        <a href="#!" class="mr-6 text-neutral-600 dark:text-neutral-200">
+        <a href="#!" class="mr-6 text-light dark:text-neutral-200">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            class="h-4 w-4"
+            class="h-6 w-6"
             fill="currentColor"
             viewBox="0 0 24 24"
           >
@@ -28,10 +28,10 @@
             />
           </svg>
         </a>
-        <a href="#!" class="mr-6 text-neutral-600 dark:text-neutral-200">
+        <a href="#!" class="mr-6 text-light dark:text-neutral-200">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            class="h-4 w-4"
+            class="h-6 w-6"
             fill="currentColor"
             viewBox="0 0 24 24"
           >
@@ -40,7 +40,7 @@
             />
           </svg>
         </a>
-        <a href="#!" class="mr-6 text-neutral-600 dark:text-neutral-200">
+        <a href="#!" class="mr-6 text-light dark:text-neutral-200">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             class="h-5 w-5"
@@ -54,10 +54,10 @@
             />
           </svg>
         </a>
-        <a href="#!" class="mr-6 text-neutral-600 dark:text-neutral-200">
+        <a href="#!" class="mr-6 text-light dark:text-neutral-200">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            class="h-4 w-4"
+            class="h-6 w-6"
             fill="currentColor"
             viewBox="0 0 24 24"
           >
@@ -66,10 +66,10 @@
             />
           </svg>
         </a>
-        <a href="#!" class="mr-6 text-neutral-600 dark:text-neutral-200">
+        <a href="#!" class="mr-6 text-light dark:text-neutral-200">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            class="h-4 w-4"
+            class="h-6 w-6"
             fill="currentColor"
             viewBox="0 0 24 24"
           >
@@ -78,10 +78,10 @@
             />
           </svg>
         </a>
-        <a href="#!" class="text-neutral-600 dark:text-neutral-200">
+        <a href="#!" class="text-light dark:text-neutral-200">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            class="h-4 w-4"
+            class="h-6 w-6"
             fill="currentColor"
             viewBox="0 0 24 24"
           >
