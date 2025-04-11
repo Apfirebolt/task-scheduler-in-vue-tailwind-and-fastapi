@@ -3,6 +3,9 @@ import { cookies } from 'vue-cookies'
 import { ref, onMounted } from "vue";
 import axios from "axios";
 import AOS from "aos";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome"
+import { library } from '@fortawesome/fontawesome-svg-core';
+import { faTasks, faPenAlt } from '@fortawesome/free-solid-svg-icons';
 
 const taskData = ref({
   title: "",
@@ -22,6 +25,8 @@ function getCookie(name) {
   }
   return null;
 }
+
+library.add(faTasks, faPenAlt);
 
 // Example usage
 const cookieValue = getCookie('fakesession');
@@ -58,7 +63,7 @@ const resetSuccessMessage = () => {
 </script>
 
 <template>
-  <div class="container bg-gray-200 mx-auto text-gray-100 p-3">
+  <div class="container bg-gray-200 mx-auto text-gray-100">
     <div v-if="successMessage" class="text-center bg-green-600 text-bold text-lg my-2 p-3">
       <p>
         {{ successMessage }}
@@ -68,18 +73,24 @@ const resetSuccessMessage = () => {
         data-aos="fade-left"
         data-aos-duration="500"
         data-aos-ease="ease">
-      <p class="text-center text-2xl my-3 text-red-700">ADD TASK</p>
+      <p class="text-center bg-primary text-2xl my-3 p-2 text-white">ADD TASK</p>
       <div class="mb-4">
         <label class="block text-gray-700 text-sm font-bold mb-2" for="title">
           Title
         </label>
-        <input
-          class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          id="title"
-          type="text"
-          placeholder="Task Title"
-          v-model="taskData.title"
-        />
+        <div class="relative">
+          <input
+            class="shadow appearance-none border rounded w-full py-2 px-10 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            id="title"
+            type="text"
+            placeholder="Task Title"
+            v-model="taskData.title"
+          />
+          <font-awesome-icon 
+            icon="tasks" 
+            class="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary"
+          />
+        </div>
       </div>
       <div class="mb-4">
         <label
@@ -88,14 +99,20 @@ const resetSuccessMessage = () => {
         >
           Description
         </label>
-        <textarea
-          class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          id="description"
-          type="text"
-          placeholder="Task Description"
-          rows="10"
-          v-model="taskData.description"
-        ></textarea>
+        <div class="relative">
+          <textarea
+            class="shadow appearance-none border rounded w-full py-2 px-10 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            id="description"
+            type="text"
+            placeholder="Task Description"
+            rows="10"
+            v-model="taskData.description"
+          ></textarea>
+          <font-awesome-icon 
+            icon="pen-alt" 
+            class="absolute left-3 top-3 text-primary"
+          />
+        </div>
       </div>
       <div class="mb-4">
         <label class="block text-gray-700 text-sm font-bold mb-2" for="status">
@@ -123,7 +140,7 @@ const resetSuccessMessage = () => {
         />
       </div>
       <input
-        class="shadow bg-purple-500 hover:bg-purple-400 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-4 rounded"
+        class="shadow my-2 bg-secondary hover:bg-accent-dark hover:text-dark transition-all duration-300 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-4 rounded"
         type="submit"
         value="Add Task"
       />
