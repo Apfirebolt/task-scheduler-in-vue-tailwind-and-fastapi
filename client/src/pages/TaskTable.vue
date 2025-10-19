@@ -20,7 +20,7 @@ const sortingParams = ref({
 const getApiData = async () => {
   try {
     isLoading.value = true;
-    const responseData = await axios.get("http://localhost:8000/tasks");
+    const responseData = await axios.get("/tasks/");
     if (responseData) {
       tasks.value = responseData.data;
       errorMessage.value = "";
