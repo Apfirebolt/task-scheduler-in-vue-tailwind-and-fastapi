@@ -13,7 +13,7 @@ const isLoading = ref(false);
 const getApiData = async () => {
   try {
     isLoading.value = true;
-    const responseData = await axios.get("/tasks");
+    const responseData = await axios.get("/tasks/");
     console.log('Response data is ', responseData)
     if (responseData) {
       tasks.value = responseData.data;

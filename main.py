@@ -9,9 +9,10 @@ from backend.tasks import router as task_router
 
 app = FastAPI(title="Fast API Scheduler",
     docs_url="/docs",
-    version="0.0.1")
+    version="0.0.1",
+    redirect_slashes=False)
 
-origins = ["http://localhost:8080","http://localhost:3000",]
+origins = ["http://localhost:8080","http://127.0.0.1:8080","http://localhost:3000",]
 
 app.add_middleware(
     CORSMiddleware,

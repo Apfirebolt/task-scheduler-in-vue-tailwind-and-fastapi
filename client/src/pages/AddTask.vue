@@ -42,7 +42,7 @@ onMounted(() => {
 const submitFormData = async () => {
 
   try {
-    const responseData = await axios.post('/tasks', taskData.value)
+    const responseData = await axios.post('/tasks/', taskData.value)
     if (responseData) {
       successMessage.value = 'Task created successfully!'
       resetSuccessMessage();
