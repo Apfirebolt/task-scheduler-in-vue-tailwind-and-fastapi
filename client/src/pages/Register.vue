@@ -27,7 +27,7 @@ const errorMessage = ref("");
 const submitFormData = async () => {
   try {
     const responseData = await axios.post(
-      "http://localhost:8000/auth/register",
+      "/auth/register",
       registerData.value
     );
     if (responseData) {

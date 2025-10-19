@@ -22,7 +22,7 @@ const statusChoices = ["To Do", "In Progress", "In Review", "Done"];
 const submitFormData = async () => {
   try {
     const responseData = await axios.patch(
-      "http://localhost:8000/tasks/" + route.params.id,
+      "/tasks/" + route.params.id,
       taskData.value
     );
     if (responseData) {
@@ -39,7 +39,7 @@ library.add(faTasks, faPenAlt);
 const getApiData = async () => {
   try {
     const responseData = await axios.get(
-      "http://localhost:8000/tasks/" + route.params.id
+      "/tasks/" + route.params.id
     );
     if (responseData) {
       successMessage.value = "Task data retrieved successfully!";
@@ -54,7 +54,7 @@ const getApiData = async () => {
 const deleteTaskHandler = async () => {
   try {
     const responseData = await axios.delete(
-      "http://localhost:8000/tasks/" + route.params.id
+      "/tasks/" + route.params.id
     );
 
     if (responseData) {

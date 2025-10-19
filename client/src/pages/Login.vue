@@ -19,7 +19,7 @@ const errorMessage = ref("");
 const submitFormData = async () => {
     try {
         const responseData = await axios.post(
-            "http://localhost:8000/auth/login",
+            "/auth/login",
             loginData.value
         );
         if (responseData) {
