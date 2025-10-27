@@ -24,7 +24,7 @@ git clone <repository-url>
 cd task-scheduler-in-vue-tailwind-and-fastapi
 
 # Start the application with Docker
-docker-compose up --build
+docker compose up --build
 
 # Access the application
 # Frontend: http://localhost:8080
@@ -52,7 +52,7 @@ task-scheduler-in-vue-tailwind-and-fastapi/
 │   └── nginx.conf         # Nginx reverse proxy config
 ├── alembic/               # Database migrations
 ├── docs/                  # Documentation (this folder)
-├── docker-compose.yaml    # Service orchestration
+├── docker compose.yaml    # Service orchestration
 └── main.py               # FastAPI application entry
 ```
 
@@ -114,7 +114,7 @@ The Task Scheduler is a full-stack application with:
 
 ### Overview
 
-The application is fully containerized using Docker and Docker Compose. See **[docs/DOCKER.md](./DOCKER.md)** for complete Docker documentation.
+The application is fully containerized using Docker and Docker Compose. See **[docs/deployment/DOCKER.md](./deployment/DOCKER.md)** for complete Docker documentation.
 
 ### Key Features
 
@@ -128,12 +128,12 @@ The application is fully containerized using Docker and Docker Compose. See **[d
 
 | Command | Description |
 |---------|-------------|
-| `docker-compose up --build` | Build and start all services |
-| `docker-compose up -d` | Start in background |
-| `docker-compose down` | Stop all services |
-| `docker-compose logs -f` | View logs |
-| `docker-compose ps` | Check service status |
-| `docker-compose down -v` | Stop and remove data |
+| `docker compose up --build` | Build and start all services |
+| `docker compose up -d` | Start in background |
+| `docker compose down` | Stop all services |
+| `docker compose logs -f` | View logs |
+| `docker compose ps` | Check service status |
+| `docker compose down -v` | Stop and remove data |
 
 ### Services
 
@@ -154,7 +154,7 @@ The application is fully containerized using Docker and Docker Compose. See **[d
 
 ### Environment Configuration
 
-Database credentials are configured in `docker-compose.yaml`:
+Database credentials are configured in `docker compose.yaml`:
 
 ```yaml
 environment:
@@ -242,7 +242,7 @@ Migrations are automatically run when the backend container starts. To manually 
 
 ```powershell
 # Inside backend container
-docker-compose exec backend alembic upgrade head
+docker compose exec backend alembic upgrade head
 
 # Or locally
 alembic upgrade head
@@ -269,17 +269,17 @@ Output goes to `client/dist/` for production use.
 # Windows: Kill process using port 8000
 Get-Process -Id (Get-NetTCPConnection -LocalPort 8000).OwningProcess | Stop-Process
 
-# Or change ports in docker-compose.yaml
+# Or change ports in docker compose.yaml
 ```
 
 #### Database Connection Refused
 
 ```powershell
 # Check database logs
-docker-compose logs db
+docker compose logs db
 
 # Verify database is healthy
-docker-compose ps db
+docker compose ps db
 
 # The db service must show "(healthy)"
 ```
@@ -288,20 +288,20 @@ docker-compose ps db
 
 ```powershell
 # Check nginx configuration
-docker-compose exec frontend nginx -t
+docker compose exec frontend nginx -t
 
 # Check backend is running
-docker-compose ps backend
+docker compose ps backend
 
 # View frontend logs
-docker-compose logs frontend
+docker compose logs frontend
 ```
 
 #### API Returns 404
 
 ```powershell
 # Ensure nginx proxy_pass is correct
-docker-compose exec frontend cat /etc/nginx/nginx.conf
+docker compose exec frontend cat /etc/nginx/nginx.conf
 
 # Check backend API is working
 curl http://localhost:8000/docs
@@ -309,11 +309,11 @@ curl http://localhost:8000/docs
 
 ### Troubleshooting Steps
 
-1. Check service status: `docker-compose ps`
-2. View logs: `docker-compose logs <service-name>`
-3. Verify environment: `docker-compose exec <service> env`
-4. Test connectivity: `docker-compose exec frontend ping backend`
-5. Restart services: `docker-compose restart`
+1. Check service status: `docker compose ps`
+2. View logs: `docker compose logs <service-name>`
+3. Verify environment: `docker compose exec <service> env`
+4. Test connectivity: `docker compose exec frontend ping backend`
+5. Restart services: `docker compose restart`
 
 ---
 
@@ -321,7 +321,7 @@ curl http://localhost:8000/docs
 
 ### Detailed Documentation
 
-- **[Docker Configuration & Migration](./DOCKER.md)**
+- **[Docker Configuration & Migration](./deployment/DOCKER.md)**
   - Complete Docker setup details
   - Dockerfiles and configuration
   - Architecture diagrams
@@ -354,7 +354,7 @@ curl http://localhost:8000/docs
 
 | File | Purpose |
 |------|---------|
-| `docker-compose.yaml` | Service orchestration |
+| `docker compose.yaml` | Service orchestration |
 | `backend/Dockerfile` | Backend container definition |
 | `client/Dockerfile` | Frontend container definition |
 | `client/nginx.conf` | Nginx reverse proxy configuration |
@@ -370,19 +370,19 @@ curl http://localhost:8000/docs
 
 ```powershell
 # Build images without starting
-docker-compose build
+docker compose build
 
 # Run a command in a container
-docker-compose exec backend python -m pytest
+docker compose exec backend python -m pytest
 
 # View real-time logs
-docker-compose logs -f backend
+docker compose logs -f backend
 
 # Stop and remove everything
-docker-compose down -v
+docker compose down -v
 
 # Rebuild and start fresh
-docker-compose down -v && docker-compose up --build
+docker compose down -v && docker compose up --build
 ```
 
 ### Testing the Application
@@ -409,7 +409,7 @@ The Task Scheduler is a modern, containerized full-stack application with:
 - ✅ Comprehensive documentation
 - ✅ Easy development setup
 
-**Ready to get started?** Run `docker-compose up --build` and navigate to http://localhost:8080!
+**Ready to get started?** Run `docker compose up --build` and navigate to http://localhost:8080!
 
 ---
 

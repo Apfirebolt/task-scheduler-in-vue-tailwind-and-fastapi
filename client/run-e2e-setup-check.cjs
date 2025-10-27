@@ -86,9 +86,9 @@ testFiles.forEach(file => {
 })
 
 // Check Docker setup
-const dockerComposePath = path.join(process.cwd(), '..', 'docker-compose.yaml')
+const dockerComposePath = path.join(process.cwd(), '..', 'docker compose.yaml')
 if (fs.existsSync(dockerComposePath)) {
-  console.log('\n🐳 Docker setup found at ../docker-compose.yaml')
+  console.log('\n🐳 Docker setup found at ../docker compose.yaml')
   console.log('✅ You can run Docker-based tests with: npm run test:e2e:docker')
 } else {
   console.log('\n⚠️  Docker setup not found. You can only run local dev server tests.')

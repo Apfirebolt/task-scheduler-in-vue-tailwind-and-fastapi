@@ -372,10 +372,10 @@ node run-e2e-tests.js --env development
 #### Docker Environment
 ```bash
 # Ensure Docker services are running
-docker-compose up -d
+docker compose up -d
 
 # Wait for services to be ready
-docker-compose ps
+docker compose ps
 
 # Run tests against Docker
 node run-e2e-tests.js --env staging
@@ -439,7 +439,7 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: Start application
-        run: docker-compose up -d
+        run: docker compose up -d
 
       - name: Run E2E tests
         run: node run-e2e-tests.js --env staging

@@ -1,0 +1,42 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apk add --no-cache git curl
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci
+
+# Copy source code
+COPY . .
+
+# Install additional testing and development tools
+RUN npm install --save-dev \
+    @playwright/test@latest \
+    vitest@latest \
+    @vitest/ui@latest \
+    @vitest/coverage-v8@latest \
+    jsdom@latest \
+    @testing-library/vue@latest \
+    @testing-library/jest-dom@latest \
+    @testing-library/user-event@latest
+
+# Install Playwright browsers
+RUN npx playwright install --with-deps
+
+# Create directories for reports
+RUN mkdir -p test-results coverage reports
+
+# Expose port
+EXPOSE 3000
+
+# Default command for development
+CMD ["npm", "run", "dev"]
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:3000/ || exit 1

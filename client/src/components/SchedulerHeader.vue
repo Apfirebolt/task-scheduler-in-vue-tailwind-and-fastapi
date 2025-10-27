@@ -56,6 +56,26 @@ const previousMonth = () => {
   updateTaskData(previousMonthValue);
 };
 
+const updateTaskData = (dateValue) => {
+  let days = [];
+  let daysInCurrentMonth = dateValue.daysInMonth();
+  for (let i = 0; i < daysInCurrentMonth; i += 1) {
+    let currentDate = dateValue.add(i, "day");
+    let currentObject = {
+      date: currentDate.format("MMMM D, YYYY"),
+      tasks: [],
+    };
+    // Add tasks that match this date
+    tasks.value.forEach(task => {
+      if (dayjs(task.dueDate).format("MMMM D, YYYY") === currentDate.format("MMMM D, YYYY")) {
+        currentObject.tasks.push(task);
+      }
+    });
+    days.push(currentObject);
+  }
+  monthDays.value = days;
+};
+
 const currentMonthAndYear = computed(() => {
   return (
     dayjs(startDate.value).format("MMMM") +

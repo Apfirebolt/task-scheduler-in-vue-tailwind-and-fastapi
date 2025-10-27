@@ -1,0 +1,46 @@
+FROM python:3.10-slim
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy requirements first for better caching
+COPY requirements.txt requirements-test.txt ./
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements-test.txt
+
+# Install additional development and testing tools
+RUN pip install --no-cache-dir \
+    locust \
+    pytest-mock \
+    pytest-xdist \
+    pytest-html \
+    pytest-benchmark \
+    black \
+    isort \
+    flake8 \
+    mypy \
+    bandit \
+    safety
+
+# Copy application code
+COPY . .
+
+# Create directories for reports
+RUN mkdir -p reports performance-reports
+
+# Set Python path
+ENV PYTHONPATH=/app
+
+# Health check endpoint
+RUN echo "def health_check():\n    return {'status': 'healthy'}" > health_endpoint.py
+
+# Default command
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

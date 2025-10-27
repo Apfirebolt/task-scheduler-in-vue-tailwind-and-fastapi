@@ -231,7 +231,7 @@ onMounted(() => {
                   v-for="(item, index) in filteredTasks"
                   class="border-b dark:border-neutral-500"
                   :key="index"
-                  @click="goToTaskDetail"
+                  @click="goToTaskDetail(item.id)"
                 >
                   <td class="whitespace-nowrap px-6 py-4 font-medium">
                     {{ index + 1 }}

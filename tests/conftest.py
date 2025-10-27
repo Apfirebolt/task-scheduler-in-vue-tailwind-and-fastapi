@@ -17,14 +17,34 @@ from main import app
 from backend import db
 from backend.tasks import model
 
-# Test database configuration
-SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
+# Test database configuration - use PostgreSQL in Docker, SQLite locally
+def get_test_database_url():
+    """Determine test database URL based on environment"""
+    # Check if running in Docker/test environment
+    if os.getenv("PYTEST_CURRENT_TEST") or os.getenv("DOCKER_CONTAINER"):
+        # Use PostgreSQL for Docker/integration tests
+        db_user = os.getenv("DATABASE_USERNAME", "test_scheduler")
+        db_pass = os.getenv("DATABASE_PASSWORD", "test_scheduler")
+        db_host = os.getenv("DATABASE_HOST", "test-db")
+        db_name = os.getenv("DATABASE_NAME", "test_scheduler")
+        return f"postgresql://{db_user}:{db_pass}@{db_host}/{db_name}"
+    else:
+        # Use SQLite for local development
+        return "sqlite:///./test.db"
 
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL,
-    connect_args={"check_same_thread": False},
-    poolclass=StaticPool,
-)
+SQLALCHEMY_DATABASE_URL = get_test_database_url()
+
+# Configure engine based on database type
+if "sqlite" in SQLALCHEMY_DATABASE_URL:
+    engine = create_engine(
+        SQLALCHEMY_DATABASE_URL,
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+else:
+    # PostgreSQL configuration
+    engine = create_engine(SQLALCHEMY_DATABASE_URL)
+
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 

@@ -7,7 +7,7 @@ export default defineConfig({
   test: {
     environment: 'happy-dom',
     globals: true,
-    setupFiles: ['./tests/setup.ts'],
+    setupFiles: ['./tests/setup-tests.js'],
     include: ['**/*.{test,spec}.{js,ts,jsx,tsx,vue}'],
     exclude: [
       'node_modules',
@@ -31,10 +31,23 @@ export default defineConfig({
       ],
       thresholds: {
         global: {
-          branches: 70,
-          functions: 70,
-          lines: 70,
-          statements: 70
+          branches: 100,
+          functions: 100,
+          lines: 100,
+          statements: 100
+        },
+        // Per-file thresholds for critical components
+        './src/pages/': {
+          branches: 100,
+          functions: 100,
+          lines: 100,
+          statements: 100
+        },
+        './src/components/': {
+          branches: 100,
+          functions: 100,
+          lines: 100,
+          statements: 100
         }
       }
     },

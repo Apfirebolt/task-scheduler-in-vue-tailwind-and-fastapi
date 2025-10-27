@@ -1,0 +1,48 @@
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: scheduler
+      POSTGRES_PASSWORD: scheduler
+      POSTGRES_DB: scheduler
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "scheduler"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile
+    environment:
+      DATABASE_USERNAME: scheduler
+      DATABASE_PASSWORD: scheduler
+      DATABASE_HOST: db
+      DATABASE_NAME: scheduler
+      # Additional environment variables (e.g. SECRET_KEY) can be added here
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8001:8000"
+    volumes:
+      # Mount test files for running tests during development
+      - ../tests:/app/tests
+      - ../config:/app/config
+
+  frontend:
+    build:
+      context: ../client
+      dockerfile: Dockerfile
+      args:
+        VITE_BASE_URL: "http://127.0.0.1:8080/"
+    depends_on:
+      - backend
+    ports:
+      - "8081:8080"
+    # If you want to use a custom domain or reverse proxy, you can remove the port mapping
+volumes:
+  postgres_data:

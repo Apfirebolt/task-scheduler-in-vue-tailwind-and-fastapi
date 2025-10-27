@@ -195,9 +195,9 @@ jobs:
         run: |
           echo "Deploying version ${{ needs.pre-deployment-checks.outputs.version }} to staging"
 
-          # Update docker-compose with new image tags
-          sed -i "s|image: .*backend.*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-backend:${{ needs.pre-deployment-checks.outputs.version }}|g" docker-compose.yaml
-          sed -i "s|image: .*frontend.*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend:${{ needs.pre-deployment-checks.outputs.version }}|g" docker-compose.yaml
+          # Update docker compose with new image tags
+          sed -i "s|image: .*backend.*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-backend:${{ needs.pre-deployment-checks.outputs.version }}|g" docker compose.yaml
+          sed -i "s|image: .*frontend.*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend:${{ needs.pre-deployment-checks.outputs.version }}|g" docker compose.yaml
 
           # Deploy to staging (implement your deployment logic here)
           # This could be SSH to staging server, kubectl apply, etc.
@@ -505,8 +505,8 @@ jobs:
 
             ### 📦 Installation
             ```bash
-            docker-compose pull
-            docker-compose up -d
+            docker compose pull
+            docker compose up -d
             ```
 
             ---

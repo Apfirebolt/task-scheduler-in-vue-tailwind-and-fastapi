@@ -10,8 +10,8 @@ WORKDIR /app
 ARG VITE_BASE_URL=http://127.0.0.1:8080/
 
 # Install dependencies and build
-COPY package.json package-lock.json ./
-RUN --mount=type=cache,target=/root/.npm npm ci
+COPY package*.json ./
+RUN npm install
 COPY . .
 
 # Create .env file with the build argument

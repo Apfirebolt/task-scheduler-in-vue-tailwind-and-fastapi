@@ -1,0 +1,216 @@
+services:
+  # Test Database Service
+  test-db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: test_scheduler
+      POSTGRES_PASSWORD: test_scheduler
+      POSTGRES_DB: test_scheduler
+    volumes:
+      - test_postgres_data:/var/lib/postgresql/data
+      - ./logs/test-db:/var/log/postgresql
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "test_scheduler"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - test-network
+
+  # Backend Testing Service
+  test-backend:
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile
+    environment:
+      DATABASE_USERNAME: test_scheduler
+      DATABASE_PASSWORD: test_scheduler
+      DATABASE_HOST: test-db
+      DATABASE_NAME: test_scheduler
+      PYTEST_CURRENT_TEST: "true"
+      PYTHONPATH: "/app"
+    volumes:
+      - ../tests:/app/tests
+      - ../backend:/app/backend
+      - ../src/main.py:/app/main.py
+      - ../src/requirements.txt:/app/requirements.txt
+      - ../src/requirements-test.txt:/app/requirements-test.txt
+      - ../config/pytest.ini:/app/pytest.ini
+      - ../alembic:/app/alembic
+      - ../config/alembic.ini:/app/alembic.ini
+      - test_logs:/app/logs
+      - test_reports:/app/reports
+      - pytest_cache:/app/.pytest_cache
+    working_dir: /app
+    depends_on:
+      test-db:
+        condition: service_healthy
+    networks:
+      - test-network
+    command: >
+      sh -c "
+        echo 'Waiting for database...' &&
+        while ! nc -z test-db 5432; do sleep 1; done &&
+        echo 'Database is ready' &&
+        echo 'Running database migrations...' &&
+        alembic upgrade head &&
+        echo 'Starting tests...' &&
+        python -m pytest
+        --junitxml=/app/reports/junit.xml
+        --html=/app/reports/report.html
+        --cov=/app/backend
+        --cov-report=html:/app/reports/coverage
+        --cov-report=xml:/app/reports/coverage.xml
+        --log-cli-level=INFO
+        --log-file=/app/logs/pytest.log
+        -v
+        tests/
+      "
+
+  # Frontend Unit Testing Service
+  test-frontend:
+    build:
+      context: ..
+      dockerfile: client/Dockerfile
+    environment:
+      NODE_ENV: test
+    volumes:
+      - ../client/tests:/app/tests
+      - ../client/src:/app/src
+      - ../client/package.json:/app/package.json
+      - ../client/vite.config.js:/app/vite.config.js
+      - test_logs:/app/logs
+      - test_reports:/app/reports
+      - vitest_cache:/app/node_modules/.vitest
+    networks:
+      - test-network
+    command: >
+      sh -c "
+        npm ci &&
+        npm run test:run --
+        --reporter=verbose
+        --reporter=json
+        --outputFile=/app/reports/vitest-report.json
+        --coverage
+        --reporter=html
+        --outputFile=/app/reports/coverage-frontend
+      "
+
+  # E2E Testing Service
+  test-e2e:
+    build:
+      context: ..
+      dockerfile: client/Dockerfile
+    environment:
+      BASE_URL: http://frontend:8080
+      API_URL: http://backend:8000
+    volumes:
+      - ../client/tests:/app/tests
+      - ../client/playwright.config.ts:/app/playwright.config.ts
+      - test_logs:/app/logs
+      - test_reports:/app/reports
+      - playwright_report:/app/playwright-report
+      - test_results:/app/test-results
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - test-network
+    command: >
+      sh -c "
+        npm ci &&
+        npx playwright install --with-deps &&
+        npx playwright test
+        --reporter=html,list
+        --output-dir=/app/reports/playwright
+      "
+
+  # Application Services for Integration Testing
+  backend:
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile
+    environment:
+      DATABASE_USERNAME: test_scheduler
+      DATABASE_PASSWORD: test_scheduler
+      DATABASE_HOST: test-db
+      DATABASE_NAME: test_scheduler
+    volumes:
+      - test_logs:/app/logs
+    depends_on:
+      test-db:
+        condition: service_healthy
+    networks:
+      - test-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: client/Dockerfile
+      args:
+        VITE_BASE_URL: "http://localhost:8080/"
+    volumes:
+      - test_logs:/app/logs
+    depends_on:
+      - backend
+    networks:
+      - test-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Performance Testing Service
+  test-performance:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.test
+    environment:
+      TARGET_URL: http://backend:8000
+    volumes:
+      - ../tests/performance:/app/tests/performance
+      - test_logs:/app/logs
+      - test_reports:/app/reports
+    depends_on:
+      - backend
+    networks:
+      - test-network
+    command: >
+      sh -c "
+        pip install locust &&
+        python -m locust
+        -f /app/tests/performance/locustfile.py
+        --headless
+        --users 10
+        --spawn-rate 2
+        --run-time 60s
+        --host http://backend:8000
+        --html /app/reports/performance-report.html
+        --logfile /app/logs/locust.log
+      "
+
+volumes:
+  test_postgres_data:
+    driver: local
+  test_logs:
+    driver: local
+  test_reports:
+    driver: local
+  pytest_cache:
+    driver: local
+  vitest_cache:
+    driver: local
+  playwright_report:
+    driver: local
+  test_results:
+    driver: local
+
+networks:
+  test-network:
+    driver: bridge

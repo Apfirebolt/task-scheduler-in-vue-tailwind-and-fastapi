@@ -42,7 +42,13 @@ onMounted(() => {
 const submitFormData = async () => {
 
   try {
-    const responseData = await axios.post('/tasks/', taskData.value)
+    // Convert date string to datetime format (ISO 8601)
+    const dataToSend = {
+      ...taskData.value,
+      dueDate: taskData.value.dueDate ? `${taskData.value.dueDate}T00:00:00` : null
+    }
+    
+    const responseData = await axios.post('/tasks/', dataToSend)
     if (responseData) {
       successMessage.value = 'Task created successfully!'
       resetSuccessMessage();

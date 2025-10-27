@@ -11,4 +11,33 @@ export default defineConfig({
   build: {
     outDir: 'dist',
   },
+  test: {
+    globals: true,
+    environment: 'happy-dom',
+    setupFiles: ['./tests/setup.js'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      exclude: [
+        'node_modules/',
+        'tests/',
+        '**/*.config.js',
+        '**/*.config.ts',
+        'dist/',
+        'coverage/',
+      ],
+      thresholds: {
+        global: {
+          branches: 80,
+          functions: 80,
+          lines: 80,
+          statements: 80,
+        },
+      },
+    },
+    reporters: ['verbose', 'json'],
+    outputFile: {
+      json: './test-results/vitest-report.json',
+    },
+  },
 });

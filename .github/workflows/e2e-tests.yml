@@ -6,7 +6,7 @@ on:
     paths:
       - 'client/**'
       - 'backend/**'
-      - 'docker-compose.yaml'
+      - 'docker compose.yaml'
       - 'client/playwright.config.ts'
       - 'client/tests/e2e/**'
       - '.github/workflows/e2e-tests.yml'
@@ -15,7 +15,7 @@ on:
     paths:
       - 'client/**'
       - 'backend/**'
-      - 'docker-compose.yaml'
+      - 'docker compose.yaml'
       - 'client/playwright.config.ts'
       - 'client/tests/e2e/**'
       - '.github/workflows/e2e-tests.yml'
@@ -113,20 +113,20 @@ jobs:
 
       - name: Build Docker images
         run: |
-          docker-compose build --parallel
+          docker compose build --parallel
 
       - name: Start services with Docker Compose
         run: |
-          docker-compose up -d --build
+          docker compose up -d --build
 
       - name: Wait for services to be ready
         run: |
           echo "Waiting for services to be healthy..."
           timeout 300 bash -c '
-            while ! docker-compose ps | grep -q "Up (healthy)"; do
+            while ! docker compose ps | grep -q "Up (healthy)"; do
               echo "Waiting for services..."
               sleep 10
-              docker-compose ps
+              docker compose ps
             done
           '
 
@@ -148,7 +148,7 @@ jobs:
       - name: Verify service status
         run: |
           echo "=== Service Status ==="
-          docker-compose ps
+          docker compose ps
 
           echo "=== Backend Health ==="
           curl -f http://localhost:8000/health || echo "Backend health check failed"
@@ -158,11 +158,11 @@ jobs:
 
       - name: Run database migrations
         run: |
-          docker-compose exec -T backend alembic upgrade head
+          docker compose exec -T backend alembic upgrade head
 
       - name: Seed test data
         run: |
-          docker-compose exec -T backend python -c "
+          docker compose exec -T backend python -c "
           from backend.db import SessionLocal
           from backend.tasks.model import Task
           from datetime import datetime
@@ -259,16 +259,16 @@ jobs:
         if: failure()
         run: |
           echo "=== Backend logs ==="
-          docker-compose logs backend
+          docker compose logs backend
           echo "=== Frontend logs ==="
-          docker-compose logs frontend
+          docker compose logs frontend
           echo "=== Database logs ==="
-          docker-compose logs db
+          docker compose logs db
 
       - name: Cleanup Docker containers
         if: always()
         run: |
-          docker-compose down -v
+          docker compose down -v
           docker system prune -f
 
   e2e-tests-mobile:
@@ -296,7 +296,7 @@ jobs:
 
     - name: Start Docker services
       run: |
-        docker-compose up -d --build
+        docker compose up -d --build
         echo "Waiting for services to be ready..."
         timeout 120 bash -c 'until curl -f http://localhost:8080 && curl -f http://localhost:8000/docs; do sleep 2; done'
 
@@ -321,7 +321,7 @@ jobs:
 
     - name: Stop Docker services
       if: always()
-      run: docker-compose down -v
+      run: docker compose down -v
 
   smoke-test:
     timeout-minutes: 10
@@ -348,7 +348,7 @@ jobs:
 
     - name: Start Docker services
       run: |
-        docker-compose up -d --build
+        docker compose up -d --build
         echo "Waiting for services to be ready..."
         timeout 120 bash -c 'until curl -f http://localhost:8080 && curl -f http://localhost:8000/docs; do sleep 2; done'
 
@@ -365,7 +365,7 @@ jobs:
 
     - name: Stop Docker services
       if: always()
-      run: docker-compose down -v
+      run: docker compose down -v
 
   # Visual regression tests
   visual-regression:
@@ -394,7 +394,7 @@ jobs:
 
       - name: Start services
         run: |
-          docker-compose up -d --build
+          docker compose up -d --build
           sleep 60
 
       - name: Run visual regression tests
@@ -416,7 +416,7 @@ jobs:
 
       - name: Cleanup
         if: always()
-        run: docker-compose down -v
+        run: docker compose down -v
 
   # Performance tests
   performance-tests:
@@ -438,7 +438,7 @@ jobs:
 
       - name: Start services
         run: |
-          docker-compose up -d --build
+          docker compose up -d --build
           sleep 60
 
       - name: Run Lighthouse CI
@@ -455,4 +455,4 @@ jobs:
 
       - name: Cleanup
         if: always()
-        run: docker-compose down -v
+        run: docker compose down -v

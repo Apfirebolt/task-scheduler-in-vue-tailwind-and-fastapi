@@ -20,7 +20,7 @@ The application uses environment variables to configure the base URL.
 
 ### Docker Build
 
-The base URL is configured via build arguments in `docker-compose.yaml`. To change it, update the `VITE_BASE_URL` argument in the frontend service:
+The base URL is configured via build arguments in `docker compose.yaml`. To change it, update the `VITE_BASE_URL` argument in the frontend service:
 
 ```yaml
 frontend:

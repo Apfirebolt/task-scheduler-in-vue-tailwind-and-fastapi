@@ -21,9 +21,15 @@ const statusChoices = ["To Do", "In Progress", "In Review", "Done"];
 
 const submitFormData = async () => {
   try {
+    // Convert date string to datetime format (ISO 8601)
+    const dataToSend = {
+      ...taskData.value,
+      dueDate: taskData.value.dueDate ? `${taskData.value.dueDate}T00:00:00` : null
+    }
+    
     const responseData = await axios.patch(
       "/tasks/" + route.params.id,
-      taskData.value
+      dataToSend
     );
     if (responseData) {
       successMessage.value = "Task updated successfully!";
@@ -44,6 +50,14 @@ const getApiData = async () => {
     if (responseData) {
       successMessage.value = "Task data retrieved successfully!";
       taskData.value = responseData.data;
+      
+      // Convert datetime back to date format for the input field
+      if (taskData.value.dueDate) {
+        // Extract just the date portion (YYYY-MM-DD)
+        const dateObj = new Date(taskData.value.dueDate);
+        taskData.value.dueDate = dateObj.toISOString().split('T')[0];
+      }
+      
       resetSuccessMessage();
     }
   } catch (err) {

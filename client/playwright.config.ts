@@ -13,8 +13,8 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: [
-    ['html', { outputFolder: 'playwright-report' }],
-    ['json', { outputFile: 'test-results/results.json' }],
+    ['html', { outputFolder: './reports/playwright' }],
+    ['json', { outputFile: './reports/playwright-report.json' }],
     ['list'],
   ],
   use: {
@@ -64,14 +64,14 @@ export default defineConfig({
 
   // webServer temporarily disabled for testing
   // webServer: {
-  //   command: process.env.USE_DOCKER === 'true' ? 'cd .. && docker-compose up -d --build' : 'npm run dev',
+  //   command: process.env.USE_DOCKER === 'true' ? 'cd .. && docker compose up -d --build' : 'npm run dev',
   //   port: process.env.USE_DOCKER === 'true' ? 8080 : 5173,
   //   url: process.env.USE_DOCKER === 'true' ? 'http://localhost:8080' : 'http://localhost:5173',
   //   reuseExistingServer: !process.env.CI,
   //   timeout: process.env.USE_DOCKER === 'true' ? 180000 : 120000,
   // },
 
-  outputDir: 'test-results/',
+  outputDir: './test-results/e2e',
   timeout: 30000,
   expect: {
     timeout: 5000,

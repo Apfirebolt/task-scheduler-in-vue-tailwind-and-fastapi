@@ -13,9 +13,20 @@ export function mountWithDefaults(component: any, options: any = {}) {
   return mount(component, {
     global: {
       stubs: {
-        'font-awesome-icon': { template: '<i></i>' },
-        'router-link': { template: '<a><slot /></a>' },
-        'router-view': { template: '<div><slot /></div>' },
+        'font-awesome-icon': {
+          name: 'FontAwesomeIcon',
+          template: '<i class="fa-icon"><slot /></i>',
+          props: ['icon', 'class', 'style'],
+        },
+        'router-link': {
+          name: 'RouterLink',
+          template: '<a :href="to"><slot /></a>',
+          props: ['to', 'replace', 'exact', 'active-class', 'exact-active-class'],
+        },
+        'router-view': {
+          name: 'RouterView',
+          template: '<div><slot /></div>',
+        },
       }
     },
     ...options

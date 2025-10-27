@@ -1,0 +1,118 @@
+version: '3.8'
+
+services:
+  # Database (shared between dev and prod)
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: scheduler
+      POSTGRES_PASSWORD: scheduler
+      POSTGRES_DB: scheduler
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U scheduler -d scheduler"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Development Backend
+  backend-dev:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile.dev
+    environment:
+      DATABASE_USERNAME: scheduler
+      DATABASE_PASSWORD: scheduler
+      DATABASE_HOST: db
+      DATABASE_NAME: scheduler
+      DATABASE_PORT: 5432
+    volumes:
+      - ./backend:/app
+      - ./tests:/app/tests
+      - test_reports:/app/reports
+    ports:
+      - "8001:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Development Frontend
+  frontend-dev:
+    build:
+      context: ./client
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+      - frontend_coverage:/app/coverage
+      - frontend_test_results:/app/test-results
+    ports:
+      - "3001:3000"
+    environment:
+      - VITE_API_URL=http://localhost:8001
+      - NODE_ENV=development
+    command: npm run dev
+
+  # Testing Services
+  test-runner:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile.dev
+    environment:
+      DATABASE_USERNAME: scheduler
+      DATABASE_PASSWORD: scheduler
+      DATABASE_HOST: db
+      DATABASE_NAME: test_scheduler
+      DATABASE_PORT: 5432
+    volumes:
+      - ./backend:/app
+      - ./tests:/app/tests
+      - test_reports:/app/reports
+      - performance_reports:/app/performance-reports
+    depends_on:
+      db:
+        condition: service_healthy
+    profiles: [testing]
+    command: tail -f /dev/null  # Keep container running for test execution
+
+  # Performance Testing with Locust
+  performance-test:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile.dev
+    environment:
+      TARGET_HOST: http://backend-dev:8000
+    volumes:
+      - ./tests/performance:/app/performance
+      - performance_reports:/app/performance-reports
+    depends_on:
+      - backend-dev
+    profiles: [performance]
+    command: >
+      sh -c "
+        echo 'Waiting for backend to be ready...' &&
+        sleep 10 &&
+        locust -f /app/performance/locustfile.py
+               --headless
+               --host $$TARGET_HOST
+               --users 10
+               --spawn-rate 2
+               --run-time 60s
+               --html /app/performance-reports/locust-report.html
+      "
+
+volumes:
+  postgres_data:
+  test_reports:
+  frontend_coverage:
+  frontend_test_results:
+  performance_reports:

@@ -135,7 +135,7 @@ on:
     paths:
       - 'backend/**'      # Triggers backend workflows
       - 'client/**'       # Triggers frontend workflows
-      - 'docker-compose.yaml'  # Triggers E2E workflows
+      - 'docker compose.yaml'  # Triggers E2E workflows
 ```
 
 ## 📈 Performance and Optimization
@@ -246,7 +246,7 @@ projects:
 3. **Test Locally**:
    ```bash
    # Backend
-   docker-compose up -d
+   docker compose up -d
    pytest tests/
 
    # Frontend

@@ -1,0 +1,82 @@
+# Docker Compose configuration for testing
+version: '3.8'
+
+services:
+  # Test database for backend tests
+  test-db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: test_scheduler
+      POSTGRES_PASSWORD: test_scheduler
+      POSTGRES_DB: test_scheduler
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "test_scheduler"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - test-network
+
+  # Backend for API testing
+  test-backend:
+    build:
+      context: ..
+      dockerfile: backend/Dockerfile
+    environment:
+      DATABASE_USERNAME: test_scheduler
+      DATABASE_PASSWORD: test_scheduler
+      DATABASE_HOST: test-db
+      DATABASE_NAME: test_scheduler
+      DATABASE_URL: postgresql://test_scheduler:test_scheduler@test-db/test_scheduler
+    depends_on:
+      test-db:
+        condition: service_healthy
+    networks:
+      - test-network
+    volumes:
+      - ../tests:/app/tests
+      - ../config/pytest.ini:/app/pytest.ini
+
+  # Frontend test container
+  test-frontend:
+    build:
+      context: ../client
+      dockerfile: Dockerfile.test
+    environment:
+      - NODE_ENV=test
+      - CI=true
+    depends_on:
+      - test-backend
+    networks:
+      - test-network
+    volumes:
+      - ../client/tests:/app/tests
+      - ../client/src:/app/src
+      - ../client/vitest.config.ts:/app/vitest.config.ts
+      - ../client/package.json:/app/package.json
+    command: ["npm", "run", "test"]
+
+  # Frontend E2E test container
+  test-e2e:
+    build:
+      context: ../client
+      dockerfile: Dockerfile.test
+    environment:
+      - NODE_ENV=test
+      - CI=true
+      - BASE_URL=http://test-backend:8000
+    depends_on:
+      - test-backend
+    networks:
+      - test-network
+    volumes:
+      - ../client/tests:/app/tests
+      - ../client/playwright.config.ts:/app/playwright.config.ts
+    command: ["npx", "playwright", "test", "--project=chromium"]
+
+networks:
+  test-network:
+    driver: bridge
+
+volumes:
+  test-postgres-data:

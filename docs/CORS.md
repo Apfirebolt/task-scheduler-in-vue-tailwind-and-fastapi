@@ -260,7 +260,7 @@ axios.delete("/tasks/123")
 ### 1. Start the Application
 
 ```powershell
-docker-compose up --build
+docker compose up --build
 ```
 
 ### 2. Open Browser DevTools
@@ -322,13 +322,13 @@ X-Forwarded-Proto: http
 **Solutions:**
 ```powershell
 # Check nginx config syntax
-docker-compose exec frontend nginx -t
+docker compose exec frontend nginx -t
 
 # Check backend is running
-docker-compose ps backend
+docker compose ps backend
 
 # View nginx config
-docker-compose exec frontend cat /etc/nginx/nginx.conf
+docker compose exec frontend cat /etc/nginx/nginx.conf
 
 # Check backend API
 curl http://localhost:8000/docs
@@ -348,16 +348,16 @@ curl http://localhost:8000/docs
 **Solutions:**
 ```powershell
 # Check backend health
-docker-compose exec backend curl http://localhost:8000/docs
+docker compose exec backend curl http://localhost:8000/docs
 
 # Check docker network
-docker-compose exec frontend ping backend
+docker compose exec frontend ping backend
 
 # View backend logs
-docker-compose logs backend
+docker compose logs backend
 
 # Restart services
-docker-compose restart
+docker compose restart
 ```
 
 ### Issue: Changes Not Reflected
@@ -376,11 +376,11 @@ docker-compose restart
 # Hard refresh: Ctrl+Shift+R (Windows) or Cmd+Shift+R (Mac)
 
 # Rebuild containers
-docker-compose down
-docker-compose up --build
+docker compose down
+docker compose up --build
 
 # View fresh logs
-docker-compose logs -f frontend
+docker compose logs -f frontend
 ```
 
 ### Issue: CORS Errors Still Appear
@@ -397,14 +397,14 @@ docker-compose logs -f frontend
 **Solutions:**
 ```powershell
 # Check frontend config
-docker-compose exec frontend grep -r "localhost:8000" /usr/share/nginx/html
+docker compose exec frontend grep -r "localhost:8000" /usr/share/nginx/html
 
 # Verify nginx config
-docker-compose exec frontend nginx -T | grep "proxy_pass"
+docker compose exec frontend nginx -T | grep "proxy_pass"
 
 # Rebuild frontend
-docker-compose rebuild frontend
-docker-compose up frontend
+docker compose rebuild frontend
+docker compose up frontend
 ```
 
 ## Why Not Use CORS Headers?
@@ -501,7 +501,7 @@ services:
 
 ## Related Documentation
 
-- See [docs/DOCKER.md](./DOCKER.md) for Docker configuration
+- See [docs/deployment/DOCKER.md](./deployment/DOCKER.md) for Docker configuration
 - See [docs/DOCUMENTATION.md](./DOCUMENTATION.md) for complete documentation index
 
 ## Summary

@@ -1,0 +1,34 @@
+# Test-specific Dockerfile for frontend testing
+FROM node:20-alpine
+
+# Install Chromium for Playwright testing
+RUN apk add --no-cache \
+    chromium \
+    nss \
+    freetype \
+    freetype-dev \
+    harfbuzz \
+    ca-certificates \
+    ttf-freefont
+
+# Set Puppeteer to use installed Chromium
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files from client directory
+COPY client/package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Install Playwright browsers
+RUN npx playwright install chromium
+
+# Copy client source code
+COPY client/ .
+
+# Run tests
+CMD ["npm", "run", "test"]

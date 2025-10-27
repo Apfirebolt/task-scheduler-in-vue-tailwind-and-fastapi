@@ -1,0 +1,5 @@
+
+> client@0.0.0 test:run
+> vitest run --reporter=json
+
+sh: 1: vitest: not found

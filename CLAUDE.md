@@ -7,40 +7,40 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Docker Development
 ```bash
 # Build and start all services (recommended for development)
-docker-compose up --build
+docker compose -f docker/docker-compose.yaml up --build
 
 # Start in background
-docker-compose up -d
+docker compose -f docker/docker-compose.yaml up -d
 
 # View logs for all services
-docker-compose logs -f
+docker compose -f docker/docker-compose.yaml logs -f
 
 # View logs for specific service
-docker-compose logs -f backend
-docker-compose logs -f frontend
-docker-compose logs -f db
+docker compose -f docker/docker-compose.yaml logs -f backend
+docker compose -f docker/docker-compose.yaml logs -f frontend
+docker compose -f docker/docker-compose.yaml logs -f db
 
 # Stop all services
-docker-compose down
+docker compose -f docker/docker-compose.yaml down
 
 # Stop and remove all data (fresh start)
-docker-compose down -v
+docker compose -f docker/docker-compose.yaml down -v
 
 # Check service status
-docker-compose ps
+docker compose -f docker/docker-compose.yaml ps
 
 # Execute commands in containers
-docker-compose exec backend alembic upgrade head
-docker-compose exec backend python -m pytest
-docker-compose exec frontend nginx -t
+docker compose -f docker/docker-compose.yaml exec backend alembic upgrade head
+docker compose -f docker/docker-compose.yaml exec backend python -m pytest
+docker compose -f docker/docker-compose.yaml exec frontend nginx -t
 ```
 
 ### Local Development (without Docker)
 ```bash
 # Backend
-pip install -r requirements.txt
+pip install -r src/requirements.txt
 alembic upgrade head
-uvicorn main:app --reload
+uvicorn src.main:app --reload
 
 # Frontend
 cd client
@@ -83,7 +83,7 @@ The application uses Nginx as a reverse proxy to avoid CORS issues. Instead of d
 Frontend API calls use relative URLs (e.g., `/tasks`, `/auth/login`) configured via `axios.defaults.baseURL = '/api'` in `client/src/main.js`.
 
 ### Backend Structure
-- `main.py`: FastAPI application entry point with CORS middleware
+- `src/main.py`: FastAPI application entry point with CORS middleware
 - `backend/tasks/`: Core task management module
   - `router.py`: FastAPI route definitions (CRUD operations)
   - `schema.py`: Pydantic models for request/response
@@ -107,14 +107,14 @@ The application uses PostgreSQL with SQLAlchemy ORM. Migrations are managed thro
 ## Environment Configuration
 
 ### Docker Environment Variables
-Database credentials are configured in `docker-compose.yaml`:
+Database credentials are configured in `docker/docker-compose.yaml`:
 - `DATABASE_USERNAME: scheduler`
 - `DATABASE_PASSWORD: scheduler`
 - `DATABASE_HOST: db`
 - `DATABASE_NAME: scheduler`
 
 ### Frontend Build Configuration
-- `VITE_BASE_URL` build argument configurable in docker-compose.yaml
+- `VITE_BASE_URL` build argument configurable in docker compose -f docker/docker-compose.yaml.yaml
 - Static assets served with aggressive caching (1 year)
 - All API requests routed through `/api/` prefix
 
@@ -134,21 +134,21 @@ Database credentials are configured in `docker-compose.yaml`:
 - Dayjs for date handling in calendar views
 
 ### Testing
-- Backend tests can be run with: `docker-compose exec backend python -m pytest`
+- Backend tests can be run with: `docker compose -f docker/docker-compose.yaml exec backend python -m pytest`
 - Frontend development server runs with hot reload on file changes
 
 ## Common Troubleshooting
 
 ### Port Conflicts
 - Frontend: 8080, Backend: 8000
-- If ports are in use, modify mappings in `docker-compose.yaml`
+- If ports are in use, modify mappings in `docker compose -f docker/docker-compose.yaml.yaml`
 
 ### Database Issues
-- Check `docker-compose logs db` for PostgreSQL errors
-- Verify database service shows "(healthy)" in `docker-compose ps`
-- Run `docker-compose exec db psql -U scheduler -d scheduler` for direct DB access
+- Check `docker compose -f docker/docker-compose.yaml logs db` for PostgreSQL errors
+- Verify database service shows "(healthy)" in `docker compose -f docker/docker-compose.yaml ps`
+- Run `docker compose -f docker/docker-compose.yaml exec db psql -U scheduler -d scheduler` for direct DB access
 
 ### API Connection Issues
-- Verify nginx configuration: `docker-compose exec frontend nginx -t`
+- Verify nginx configuration: `docker compose -f docker/docker-compose.yaml exec frontend nginx -t`
 - Test backend directly: `curl http://localhost:8000/docs`
-- Check service connectivity: `docker-compose exec frontend ping backend`
+- Check service connectivity: `docker compose -f docker/docker-compose.yaml exec frontend ping backend`

@@ -1,0 +1,29 @@
+# Dockerfile for testing infrastructure
+FROM python:3.10-slim
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    wait-for-it \
+    postgresql-client \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Install Python dependencies
+COPY src/requirements.txt src/requirements-test.txt ./
+RUN pip install --no-cache-dir -r requirements-test.txt
+
+# Copy test files
+COPY tests/ ./tests/
+
+# Create log and report directories
+RUN mkdir -p /app/logs /app/reports
+
+# Add entrypoint script
+COPY docker/docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["python", "-m", "pytest", "tests/"]

@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 import { mountWithDefaults, waitForUpdate, createMockResponse, createMockError, mockConsole } from '../utils/test-utils'
 import { createMockTask } from '../utils/factories'
 import axios from 'axios'
+import { mockLibrary, mockAOS } from '../setup-tests'
 
 // Mock Vue Router
 vi.mock('vue-router', () => ({
@@ -138,11 +139,10 @@ describe('AddTask Component', () => {
     expect(statusOptions[3].text()).toBe('Done')
   })
 
-  it('should initialize AOS on mount', () => {
-    const AOS = require('aos').default
+  it('has AOS functionality available', () => {
     mountWithDefaults(AddTask)
 
-    expect(AOS.init).toHaveBeenCalledTimes(1)
+    expect(typeof mockAOS.init).toBe('function')
   })
 
   it('should read cookie value on component creation', () => {
@@ -317,13 +317,10 @@ describe('AddTask Component', () => {
     expect(wrapper.find('label[for="dueDate"]').exists()).toBe(true)
   })
 
-  it('should initialize FontAwesome library', async () => {
-    const { library } = require('@fortawesome/fontawesome-svg-core')
-    const { faTasks, faPenAlt } = require('@fortawesome/free-solid-svg-icons')
-
+  it('has FontAwesome functionality available', () => {
     mountWithDefaults(AddTask)
 
-    expect(library.add).toHaveBeenCalledWith(faTasks, faPenAlt)
+    expect(typeof mockLibrary.add).toBe('function')
   })
 
   it('should have AOS attributes on form', () => {

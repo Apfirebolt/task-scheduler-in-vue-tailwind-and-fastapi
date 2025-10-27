@@ -140,7 +140,7 @@ jobs:
 
     - name: Start application
       run: |
-        docker-compose up -d --build
+        docker compose up -d --build
         sleep 30  # Wait for services to be ready
 
     - name: Run E2E tests
@@ -159,7 +159,7 @@ jobs:
 
     - name: Stop application
       if: always()
-      run: docker-compose down
+      run: docker compose down
 
   security-scan:
     runs-on: ubuntu-latest
