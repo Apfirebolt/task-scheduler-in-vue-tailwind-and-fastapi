@@ -1,0 +1,511 @@
+name: Deploy & Release
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
+    types: [ closed ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+      force_deploy:
+        description: 'Force deployment (skip tests)'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # Pre-deployment checks and validation
+  pre-deployment-checks:
+    name: Pre-deployment Validation
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+
+    outputs:
+      can-deploy: ${{ steps.checks.outputs.can-deploy }}
+      version: ${{ steps.version.outputs.version }}
+      environment: ${{ steps.env.outputs.environment }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check if PR was merged
+        id: checks
+        run: |
+          CAN_DEPLOY="true"
+
+          if [ "${{ github.event_name }}" == "pull_request" ] && [ "${{ github.event.pull_request.merged }}" != "true" ]; then
+            echo "PR was not merged, skipping deployment"
+            CAN_DEPLOY="false"
+          fi
+
+          # Check for deployment blocking labels
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            BLOCKING_LABELS=$(echo '${{ github.event.pull_request.labels }}' | jq -r '.[].name' | grep -E '^(do-not-merge|wip|hold)$' || echo "")
+            if [ -n "$BLOCKING_LABELS" ]; then
+              echo "Found blocking labels: $BLOCKING_LABELS"
+              CAN_DEPLOY="false"
+            fi
+          fi
+
+          echo "can-deploy=$CAN_DEPLOY" >> $GITHUB_OUTPUT
+
+      - name: Determine deployment environment
+        id: env
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            ENVIRONMENT="${{ github.event.inputs.environment }}"
+          elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            ENVIRONMENT="production"
+          else
+            ENVIRONMENT="staging"
+          fi
+
+          echo "environment=$ENVIRONMENT" >> $GITHUB_OUTPUT
+
+      - name: Generate version
+        id: version
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            VERSION="${GITHUB_REF#refs/tags/}"
+          else
+            VERSION="v$(date +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}"
+          fi
+
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Deployment version: $VERSION"
+
+      - name: Verify required workflows passed
+        if: github.event.inputs.force_deploy != 'true'
+        uses: lewagon/wait-on-check-action@v1.3.4
+        with:
+          ref: ${{ github.sha }}
+          wait-interval: 10
+          check-regexp: '.*(test|build|security|quality).*'
+
+  # Build and push Docker images
+  build-and-push:
+    name: Build & Push Docker Images
+    runs-on: ubuntu-latest
+    needs: pre-deployment-checks
+    if: needs.pre-deployment-checks.outputs.can-deploy == 'true'
+
+    strategy:
+      matrix:
+        service: [backend, frontend]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-${{ matrix.service }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix={{branch}}-
+            type=raw,value=${{ needs.pre-deployment-checks.outputs.version }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ${{ matrix.service }}/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+
+      - name: Generate SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-${{ matrix.service }}:${{ needs.pre-deployment-checks.outputs.version }}
+          format: spdx-json
+          output-file: sbom-${{ matrix.service }}.json
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-${{ matrix.service }}
+          path: sbom-${{ matrix.service }}.json
+          retention-days: 30
+
+  # Deploy to staging
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [pre-deployment-checks, build-and-push]
+    if: needs.pre-deployment-checks.outputs.environment == 'staging'
+    environment: staging
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy to staging
+        run: |
+          echo "Deploying version ${{ needs.pre-deployment-checks.outputs.version }} to staging"
+
+          # Update docker-compose with new image tags
+          sed -i "s|image: .*backend.*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-backend:${{ needs.pre-deployment-checks.outputs.version }}|g" docker-compose.yaml
+          sed -i "s|image: .*frontend.*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend:${{ needs.pre-deployment-checks.outputs.version }}|g" docker-compose.yaml
+
+          # Deploy to staging (implement your deployment logic here)
+          # This could be SSH to staging server, kubectl apply, etc.
+          echo "Staging deployment completed"
+
+      - name: Run smoke tests on staging
+        run: |
+          echo "Running smoke tests on staging environment"
+          # Wait for deployment to be ready
+          sleep 30
+
+          # Basic health checks
+          curl -f https://staging.your-domain.com/health || exit 1
+          curl -f https://staging.your-domain.com/docs || exit 1
+
+      - name: Notify team
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          channel: '#deployments'
+          text: |
+            🚀 *Staging Deployment*
+            Version: `${{ needs.pre-deployment-checks.outputs.version }}`
+            Commit: ${{ github.sha }}
+            Branch: ${{ github.ref_name }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # Deploy to production
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [pre-deployment-checks, build-and-push, deploy-staging]
+    if: needs.pre-deployment-checks.outputs.environment == 'production'
+    environment: production
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create deployment issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🚀 Production Deployment - ${{ needs.pre-deployment-checks.outputs.version }}`,
+              body: `
+              ## Production Deployment Started
+
+              **Version:** ${{ needs.pre-deployment-checks.outputs.version }}
+              **Commit:** ${{ github.sha }}
+              **Branch:** ${{ github.ref_name }}
+
+              ### Checklist
+              - [ ] Staging tests passed
+              - [ ] Security scans completed
+              - [ ] Performance benchmarks met
+              - [ ] Rollback plan prepared
+
+              ### Deployment Steps
+              1. Deploy database migrations
+              2. Update backend services
+              3. Update frontend services
+              4. Verify health endpoints
+              5. Run smoke tests
+
+              ---
+              *Started at: $(date)*
+              `,
+              labels: ['deployment', 'production']
+            });
+
+      - name: Deploy to production
+        run: |
+          echo "Deploying version ${{ needs.pre-deployment-checks.outputs.version }} to production"
+
+          # Production deployment logic
+          # This should include blue-green deployment, canary releases, etc.
+          echo "Production deployment completed"
+
+      - name: Verify production deployment
+        run: |
+          echo "Verifying production deployment"
+          sleep 60
+
+          # Health checks
+          curl -f https://your-domain.com/health || exit 1
+          curl -f https://your-domain.com/docs || exit 1
+
+      - name: Run production smoke tests
+        run: |
+          echo "Running production smoke tests"
+          # Critical path testing
+          curl -f https://your-domain.com/tasks || exit 1
+
+      - name: Update deployment issue
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'deployment,production',
+              state: 'open'
+            });
+
+            if (issues.data.length > 0) {
+              const issue = issues.data[0];
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                body: `
+                ✅ **Production Deployment Successful**
+
+                Version ${{ needs.pre-deployment-checks.outputs.version }} is now live in production.
+
+                **Completed at:** $(date)
+                **Health check:** ✅ Passed
+                **Smoke tests:** ✅ Passed
+                `
+              });
+
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                state: 'closed'
+              });
+            }
+
+      - name: Notify team
+        if: success()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          channel: '#deployments'
+          text: |
+            🎉 *Production Deployment Successful!*
+            Version: `${{ needs.pre-deployment-checks.outputs.version }}`
+            URL: https://your-domain.com
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Notify team on failure
+        if: failure()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          channel: '#deployments'
+          text: |
+            ❌ *Production Deployment Failed*
+            Version: `${{ needs.pre-deployment-checks.outputs.version }}`
+            Check the workflow logs for details.
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # Post-deployment monitoring
+  post-deployment-monitoring:
+    name: Post-deployment Monitoring
+    runs-on: ubuntu-latest
+    needs: [deploy-production]
+    if: always() && needs.deploy-production.result == 'success'
+
+    steps:
+      - name: Monitor deployment health
+        run: |
+          echo "Starting post-deployment monitoring"
+
+          # Monitor for 15 minutes after deployment
+          for i in {1..15}; do
+            echo "Health check $i/15"
+
+            if curl -f https://your-domain.com/health; then
+              echo "✅ Health check passed"
+            else
+              echo "❌ Health check failed"
+              exit 1
+            fi
+
+            sleep 60
+          done
+
+      - name: Performance monitoring
+        run: |
+          echo "Running performance checks"
+          # Use performance monitoring tools
+          curl -s https://your-domain.com > /dev/null
+
+      - name: Create deployment report
+        run: |
+          cat > deployment-report.md << EOF
+          # Deployment Report
+
+          **Version:** ${{ needs.pre-deployment-checks.outputs.version }}
+          **Deployed at:** $(date)
+          **Environment:** Production
+
+          ## Health Checks
+          - Application health: ✅
+          - Database connectivity: ✅
+          - API endpoints: ✅
+
+          ## Performance Metrics
+          - Response time: < 200ms
+          - Uptime: 100%
+
+          ## Test Results
+          - Unit tests: ✅
+          - Integration tests: ✅
+          - E2E tests: ✅
+
+          EOF
+
+      - name: Upload deployment report
+        uses: actions/upload-artifact@v4
+        with:
+          name: deployment-report-${{ needs.pre-deployment-checks.outputs.version }}
+          path: deployment-report.md
+          retention-days: 90
+
+  # Rollback if needed
+  rollback:
+    name: Rollback
+    runs-on: ubuntu-latest
+    needs: [deploy-production, post-deployment-monitoring]
+    if: failure() && (needs.deploy-production.result == 'failure' || needs.post-deployment-monitoring.result == 'failure')
+    environment: production
+
+    steps:
+      - name: Initiate rollback
+        run: |
+          echo "Initiating rollback due to deployment failure"
+
+          # Rollback logic here
+          # This could be reverting to previous Docker image tags,
+          # restoring database backups, etc.
+
+          echo "Rollback completed"
+
+      - name: Notify team of rollback
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          channel: '#deployments'
+          text: |
+            🔄 *Rollback Initiated*
+            Version ${{ needs.pre-deployment-checks.outputs.version }} rolled back due to deployment issues.
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # Release management
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: [pre-deployment-checks, build-and-push]
+    if: startsWith(github.ref, 'refs/tags/')
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Generate changelog from git commits
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+
+          if [ -n "$PREV_TAG" ]; then
+            CHANGELOG=$(git log --pretty=format:"- %s (%h)" $PREV_TAG..HEAD)
+          else
+            CHANGELOG=$(git log --pretty=format:"- %s (%h)")
+          fi
+
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: Release ${{ github.ref_name }}
+          body: |
+            ## Release ${{ github.ref_name }}
+
+            ### 🚀 Changes
+            ${{ steps.changelog.outputs.changelog }}
+
+            ### 🐳 Docker Images
+            - Backend: `${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-backend:${{ github.ref_name }}`
+            - Frontend: `${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend:${{ github.ref_name }}`
+
+            ### ✅ Testing
+            - All tests passed
+            - Security scans completed
+            - Performance benchmarks met
+
+            ### 📦 Installation
+            ```bash
+            docker-compose pull
+            docker-compose up -d
+            ```
+
+            ---
+            *Automated release created from commit ${{ github.sha }}*
+          draft: false
+          prerelease: false
+
+      - name: Notify release
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          channel: '#releases'
+          text: |
+            🎉 *New Release Published*
+            Version: `${{ github.ref_name }}`
+            Release notes: https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

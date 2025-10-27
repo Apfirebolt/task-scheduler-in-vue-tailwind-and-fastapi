@@ -1,0 +1,176 @@
+# Testing dependencies for GitHub Actions workflows
+# These dependencies are specifically for CI/CD pipeline testing
+
+# Core testing framework
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-cov==4.1.0
+pytest-mock==3.12.0
+pytest-xdist==3.3.1
+pytest-json-report==1.5.0
+pytest-html==4.1.1
+pytest-benchmark==4.0.0
+pytest-timeout==2.1.0
+
+# HTTP testing
+httpx==0.25.2
+requests==2.31.0
+responses==0.23.3
+
+# Database testing
+psycopg2-binary==2.9.5
+factory-boy==3.3.0
+faker==19.6.2
+sqlalchemy-utils==0.41.1
+
+# Security scanning
+bandit==1.7.5
+safety==2.3.5
+semgrep==1.34.1
+
+# Code quality
+black==23.9.1
+flake8==6.1.0
+pylint==3.0.3
+isort==5.12.0
+mypy==1.6.1
+pre-commit==3.5.0
+
+# Code analysis and complexity
+radon==6.0.1
+xenon==0.9.0
+vulture==2.7
+detect-secrets==1.4.0
+
+# Documentation and reporting
+coverage==7.3.2
+sphinx==7.2.6
+sphinx-rtd-theme==1.3.0
+
+# Performance testing
+locust==2.17.0
+py-spy==0.3.14
+memory-profiler==0.61.0
+
+# Async testing support
+anyio==3.6.2
+asyncio==3.4.3
+
+# Data validation for testing
+pydantic==2.4.2
+marshmallow==3.20.1
+
+# Test data generation
+hypothesis==6.87.1
+mimesis==13.1.0
+
+# CI/CD utilities
+click==8.1.7
+colorama==0.4.6
+tqdm==4.66.1
+tabulate==0.9.0
+
+# Jupyter notebook testing (if applicable)
+nbval==0.10.0
+ipython==8.16.1
+
+# Testing utilities
+testfixtures==7.2.0
+freezegun==1.2.2
+responses-mock==0.1.1
+
+# Environment and configuration management
+python-dotenv==1.0.0
+dynaconf==3.2.4
+
+# Logging and debugging
+loguru==0.7.2
+rich==13.6.0
+pretty-errors==1.2.25
+
+# Type checking and stubs
+types-requests==2.31.0.10
+types-python-dateutil==2.8.19.14
+
+# Development utilities
+ipython==8.16.1
+jupyter==1.0.0
+watchdog==3.0.0
+
+# Container and Docker testing
+docker==6.1.3
+testcontainers==3.7.1
+
+# API testing
+swagger-spec-validator==3.0.3
+prance==23.6.21.0
+
+# Load testing
+boomer==1.7.1
+pylt7==2.1.2
+
+# Accessibility testing
+axe-core==4.7.2
+pyaxe==0.1.3
+
+# Internationalization testing
+babel==2.12.1
+pyicu==2.13.1
+
+# Monitoring and metrics
+prometheus-client==0.18.0
+statsd==4.0.1
+
+# Security testing utilities
+cryptography==41.0.4
+jwt==1.3.1
+bcrypt==4.0.1
+
+# Performance profiling
+pyinstrument==4.5.1
+line-profiler==4.1.1
+
+# Test environment management
+tox==4.11.4
+nox==2023.4.22
+
+# Documentation testing
+doctest==0.1.3
+doc8==1.1.1
+
+# Web testing integration
+selenium==4.14.0
+webdriver-manager==4.0.1
+
+# Mock and stub utilities
+responses==0.23.3
+vcrpy==6.0.1
+
+# Property-based testing extensions
+hypothesis==6.87.1
+hypothesis-jsonschema==0.23.1
+
+# Test result aggregation
+pytest-teamcity==0.10.0
+pytest-jira==0.6.17
+pytest-tap==3.4
+
+# Data integrity testing
+great-expectations==0.18.5
+pandera==0.15.1
+
+# Performance regression testing
+pytest-benchmark[histogram]==4.0.0
+pytest-profiling==1.7.0
+
+# Security testing extensions
+bandit-sarif-formatter==1.0.0
+safety-db==2023.10.23
+
+# Test documentation generation
+pytest-md==0.2.0
+pytest-mock-resources==2.10.0
+
+# Parallel test execution
+pytest-parallel==0.1.1
+xdist==0.0.0

@@ -1,0 +1,388 @@
+name: Security & Code Quality
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run security scans weekly on Sundays at 3 AM UTC
+    - cron: '0 3 * * 0'
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: '3.10'
+  NODE_VERSION: '20'
+
+jobs:
+  security-scanning:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Python Security Scanning
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install bandit safety safety-db semgrep
+
+      - name: Run Bandit security scanner
+        run: |
+          bandit -r backend/ -f json -o security-results/bandit-report.json || true
+          bandit -r backend/ -f txt -o security-results/bandit-report.txt || true
+          bandit -r backend/ -f html -o security-results/bandit-report.html || true
+
+      - name: Run Safety dependency check
+        run: |
+          safety check --json --output security-results/safety-report.json || true
+          safety check --output security-results/safety-report.txt || true
+
+      - name: Run Semgrep security scan
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+        run: |
+          semgrep --config=auto --json --output=security-results/semgrep-report.json . || true
+          semgrep --config=auto --text --output=security-results/semgrep-report.txt . || true
+
+      # Node.js Security Scanning
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: client/package-lock.json
+
+      - name: Install Node.js dependencies
+        working-directory: ./client
+        run: npm ci
+
+      - name: Run npm audit
+        working-directory: ./client
+        run: |
+          npm audit --audit-level=moderate --json > security-results/npm-audit.json || true
+          npm audit --audit-level=moderate || true
+
+      - name: Run Snyk security scan
+        continue-on-error: true
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high --json-file-output=security-results/snyk-report.json
+        continue-on-error: true
+
+      # Container Security Scanning
+      - name: Build Docker image for scanning
+        run: |
+          docker build -t task-scheduler:latest -f backend/Dockerfile .
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'task-scheduler:latest'
+          format: 'sarif'
+          output: 'security-results/trivy-results.sarif'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'security-results/trivy-results.sarif'
+
+      - name: Run Grype vulnerability scanner
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
+          grype task-scheduler:latest -o json -f table > security-results/grype-report.json || true
+
+      - name: Generate security summary
+        if: always()
+        run: |
+          echo "## 🔒 Security Scan Results" >> $GITHUB_STEP_SUMMARY
+
+          echo "### Bandit (Python Code Security)" >> $GITHUB_STEP_SUMMARY
+          if [ -f "security-results/bandit-report.txt" ]; then
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            head -20 security-results/bandit-report.txt >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "### Safety (Python Dependencies)" >> $GITHUB_STEP_SUMMARY
+          if [ -f "security-results/safety-report.txt" ]; then
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            head -20 security-results/safety-report.txt >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "### npm Audit (Node.js Dependencies)" >> $GITHUB_STEP_SUMMARY
+          if [ -f "security-results/npm-audit.json" ]; then
+            echo '```json' >> $GITHUB_STEP_SUMMARY
+            head -30 security-results/npm-audit.json >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Upload security scan results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-scan-results
+          path: security-results/
+          retention-days: 30
+
+  code-quality:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Python Code Quality
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install Python dependencies and tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install black flake8 pylint isort mypy pytest
+
+      - name: Run Black code formatting check
+        run: |
+          black --check --diff --color backend/ > quality-results/black-check.txt || true
+          black --check backend/ || echo "Black formatting issues found"
+
+      - name: Run Flake8 linting
+        run: |
+          flake8 backend/ --format=json --output-file=quality-results/flake8-report.json || true
+          flake8 backend/ > quality-results/flake8-report.txt || true
+
+      - name: Run Pylint static analysis
+        run: |
+          pylint backend/ --output-format=json > quality-results/pylint-report.json || true
+          pylint backend/ > quality-results/pylint-report.txt || true
+
+      - name: Run isort import sorting check
+        run: |
+          isort --check-only --diff backend/ > quality-results/isort-check.txt || true
+
+      - name: Run MyPy type checking
+        run: |
+          mypy backend/ --json-report quality-results/mypy-report || true
+          mypy backend/ > quality-results/mypy-report.txt || true
+
+      # Node.js Code Quality
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: client/package-lock.json
+
+      - name: Install Node.js dependencies and tools
+        working-directory: ./client
+        run: |
+          npm ci
+          npm install -g eslint prettier @typescript-eslint/parser @typescript-eslint/eslint-plugin
+
+      - name: Run ESLint (if configured)
+        working-directory: ./client
+        run: |
+          if [ -f ".eslintrc.js" ] || [ -f ".eslintrc.json" ] || [ -f "eslint.config.js" ]; then
+            npx eslint src/ --format=json --output-file=../quality-results/eslint-report.json || true
+            npx eslint src/ > ../quality-results/eslint-report.txt || true
+          else
+            echo "ESLint not configured, skipping"
+          fi
+
+      - name: Run Prettier formatting check
+        working-directory: ./client
+        run: |
+          npx prettier --check "src/**/*.{js,ts,vue,css,scss,json}" > ../quality-results/prettier-check.txt || true
+
+      - name: Run TypeScript type checking
+        working-directory: ./client
+        run: |
+          if [ -f "tsconfig.json" ]; then
+            npx vue-tsc --noEmit --skipLibCheck > ../quality-results/typescript-check.txt 2>&1 || true
+          else
+            echo "TypeScript not configured, skipping"
+          fi
+
+      # Generate quality metrics
+      - name: Calculate code complexity
+        run: |
+          pip install radon
+          radon cc backend/ --json > quality-results/code-complexity.json || true
+          radon mi backend/ --json > quality-results/maintainability-index.json || true
+
+      - name: Generate quality summary
+        if: always()
+        run: |
+          echo "## 📊 Code Quality Results" >> $GITHUB_STEP_SUMMARY
+
+          echo "### Python Code Quality" >> $GITHUB_STEP_SUMMARY
+          if [ -f "quality-results/flake8-report.txt" ]; then
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            head -15 quality-results/flake8-report.txt >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "### Code Complexity" >> $GITHUB_STEP_SUMMARY
+          if [ -f "quality-results/code-complexity.json" ]; then
+            echo '```json' >> $GITHUB_STEP_SUMMARY
+            head -20 quality-results/code-complexity.json >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Upload quality results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: code-quality-results
+          path: quality-results/
+          retention-days: 30
+
+  # Code Coverage and Quality Gates
+  quality-gates:
+    name: Quality Gates
+    runs-on: ubuntu-latest
+    needs: [security-scanning, code-quality]
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download security artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: security-scan-results
+          path: security-results/
+
+      - name: Download quality artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: code-quality-results
+          path: quality-results/
+
+      - name: Check quality gates
+        run: |
+          # Security gates
+          HIGH_VULNS=$(grep -o '"severity":"high"' security-results/*.json 2>/dev/null | wc -l || echo "0")
+          CRITICAL_VULNS=$(grep -o '"severity":"critical"' security-results/*.json 2>/dev/null | wc -l || echo "0")
+
+          echo "High vulnerabilities: $HIGH_VULNS"
+          echo "Critical vulnerabilities: $CRITICAL_VULNS"
+
+          # Quality gates
+          PYLINT_SCORE=$(grep -o '"score": [0-9.]*' quality-results/pylint-report.json 2>/dev/null | head -1 | cut -d' ' -f2 || echo "0")
+          echo "Pylint score: $PYLINT_SCORE"
+
+          # Exit on critical issues
+          if [ "$CRITICAL_VULNS" -gt 0 ]; then
+            echo "❌ Critical security vulnerabilities found!"
+            exit 1
+          fi
+
+          if [ "$HIGH_VULNS" -gt 5 ]; then
+            echo "⚠️ Too many high security vulnerabilities found!"
+            exit 1
+          fi
+
+          if [ "$PYLINT_SCORE" != "0" ] && [ "$(echo "$PYLINT_SCORE < 7.0" | bc -l)" -eq 1 ]; then
+            echo "⚠️ Code quality score too low: $PYLINT_SCORE"
+            exit 1
+          fi
+
+          echo "✅ All quality gates passed!"
+
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            let comment = '## 🔍 Security & Quality Check Results\n\n';
+
+            // Add security results
+            if (fs.existsSync('security-results/bandit-report.txt')) {
+              const banditResults = fs.readFileSync('security-results/bandit-report.txt', 'utf8');
+              comment += '### 🛡️ Security Scan\n';
+              comment += '```\n' + banditResults.substring(0, 500) + '\n```\n\n';
+            }
+
+            // Add quality results
+            if (fs.existsSync('quality-results/flake8-report.txt')) {
+              const flake8Results = fs.readFileSync('quality-results/flake8-report.txt', 'utf8');
+              comment += '### 📊 Code Quality\n';
+              comment += '```\n' + flake8Results.substring(0, 500) + '\n```\n\n';
+            }
+
+            comment += '---\n*Generated by GitHub Actions*';
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  # Dependency Management
+  dependency-update:
+    name: Dependency Updates Check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Check Python dependencies
+        run: |
+          pip install pip-review
+          pip-review --local --interactive || echo "Dependencies check completed"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Check Node.js dependencies
+        working-directory: ./client
+        run: |
+          npm ci
+          npm outdated || echo "Dependency check completed"
+
+      - name: Create issue for outdated dependencies
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '🔄 Outdated Dependencies Detected',
+              body: 'Automated dependency check has found outdated packages. Please review and update dependencies.',
+              labels: ['dependencies', 'maintenance']
+            })

@@ -6,7 +6,32 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+    "test:unit": "vitest run tests/unit/",
+    "test:watch": "vitest watch",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:install": "playwright install",
+    "test:e2e:docker": "USE_DOCKER=true playwright test",
+    "test:e2e:docker:headed": "USE_DOCKER=true playwright test --headed",
+    "test:e2e:report": "playwright show-report",
+    "test:e2e:chrome": "playwright test --project=chromium",
+    "test:e2e:firefox": "playwright test --project=firefox",
+    "test:e2e:safari": "playwright test --project=webkit",
+    "test:e2e:mobile": "playwright test --project=\"Mobile Chrome\"",
+    "test:e2e:update": "playwright test --update-snapshots",
+    "test:e2e:smoke": "node run-e2e-tests.cjs --suite smoke",
+    "test:e2e:regression": "node run-e2e-tests.cjs --suite regression",
+    "test:e2e:accessibility": "node run-e2e-tests.cjs --suite accessibility",
+    "test:e2e:responsive": "node run-e2e-tests.cjs --suite responsive",
+    "test:e2e:staging": "node run-e2e-tests.cjs --env staging",
+    "test:e2e:production": "node run-e2e-tests.cjs --env production"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.7.2",
@@ -25,10 +50,15 @@
     "vue3-scroll-spy": "^1.0.8"
   },
   "devDependencies": {
+    "@playwright/test": "^1.50.0",
     "@vitejs/plugin-vue": "^5.2.3",
+    "@vue/test-utils": "^2.4.6",
+    "@vitest/ui": "^2.1.8",
     "autoprefixer": "^10.4.21",
+    "happy-dom": "^15.11.6",
     "postcss": "^8.5.3",
     "tailwindcss": "^4.0.15",
-    "vite": "^6.2.2"
+    "vite": "^6.2.2",
+    "vitest": "^2.1.8"
   }
 }

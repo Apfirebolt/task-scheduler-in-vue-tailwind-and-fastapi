@@ -1,0 +1,242 @@
+name: Frontend Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'client/**'
+      - 'package*.json'
+      - 'client/vitest.config.ts'
+      - 'client/tests/**'
+      - '.github/workflows/frontend-tests.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'client/**'
+      - 'package*.json'
+      - 'client/vitest.config.ts'
+      - 'client/tests/**'
+      - '.github/workflows/frontend-tests.yml'
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  frontend-unit-tests:
+    name: Frontend Unit Tests
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18, 20, 22]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: client/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./client
+        run: npm ci
+
+      - name: Run npm audit
+        working-directory: ./client
+        run: |
+          npm audit --audit-level=moderate --json > test-results/npm-audit-${{ matrix.node-version }}.json || true
+          npm audit --audit-level=moderate || true
+
+      - name: Run linting (if ESLint is configured)
+        working-directory: ./client
+        run: |
+          if [ -f ".eslintrc.js" ] || [ -f ".eslintrc.json" ] || [ -f "eslint.config.js" ]; then
+            npm run lint -- --format=json --output-file=test-results/eslint-report-${{ matrix.node-version }}.json || true
+            npm run lint || true
+          else
+            echo "ESLint not configured, skipping linting"
+          fi
+
+      - name: Check code formatting (if Prettier is configured)
+        working-directory: ./client
+        run: |
+          if [ -f ".prettierrc" ] || [ -f ".prettierrc.json" ] || grep -q "prettier" package.json; then
+            npx prettier --check "src/**/*.{js,ts,vue,css,scss,json}" || true
+          else
+            echo "Prettier not configured, skipping formatting check"
+          fi
+
+      - name: Run TypeScript type checking
+        working-directory: ./client
+        run: |
+          if [ -f "tsconfig.json" ]; then
+            npx vue-tsc --noEmit --skipLibCheck || true
+          else
+            echo "TypeScript not configured, skipping type checking"
+          fi
+
+      - name: Run unit tests with Vitest
+        working-directory: ./client
+        run: |
+          mkdir -p test-results
+          npm run test:coverage -- --reporter=json --outputFile=test-results/vitest-results-${{ matrix.node-version }}.json
+          npm run test:coverage -- --reporter=junit --outputFile=test-results/vitest-results-${{ matrix.node-version }}.xml
+
+      - name: Run component tests
+        working-directory: ./client
+        run: |
+          npm run test:unit || true
+
+      - name: Run tests in watch mode for development check
+        working-directory: ./client
+        run: |
+          timeout 30s npm run test:watch -- --run --reporter=verbose || true
+
+      - name: Generate coverage badge
+        working-directory: ./client
+        run: |
+          if [ -f "coverage/coverage-summary.json" ]; then
+            npm install -g coverage-badge-creator
+            coverage-badge-creator
+          fi
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: frontend-test-results-node-${{ matrix.node-version }}
+          path: |
+            client/test-results/
+            client/coverage/
+            client/coverage-badge.svg
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        if: matrix.node-version == '20' && (github.event_name == 'push' || github.event_name == 'pull_request')
+        with:
+          file: ./client/coverage/lcov.info
+          flags: frontend
+          name: frontend-coverage
+          fail_ci_if_error: false
+
+      - name: Publish test results
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: Frontend Test Results (Node ${{ matrix.node-version }})
+          path: client/test-results/*.xml
+          reporter: java-junit
+
+      - name: Security Audit Summary
+        if: always()
+        run: |
+          echo "## Frontend Security Audit Results (Node ${{ matrix.node-version }})" >> $GITHUB_STEP_SUMMARY
+          if [ -f "client/test-results/npm-audit-${{ matrix.node-version }}.json" ]; then
+            echo '```json' >> $GITHUB_STEP_SUMMARY
+            head -50 client/test-results/npm-audit-${{ matrix.node-version }}.json >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No audit results available" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # Bundle size analysis
+  bundle-analysis:
+    name: Bundle Size Analysis
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: client/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./client
+        run: npm ci
+
+      - name: Build application
+        working-directory: ./client
+        run: npm run build
+
+      - name: Analyze bundle size
+        working-directory: ./client
+        run: |
+          npx bundlesize
+
+      - name: Generate bundle report
+        working-directory: ./client
+        run: |
+          npx webpack-bundle-analyzer dist/static/js/*.js --mode static --report bundle-report.html || true
+          du -sh dist/* | sort -hr > bundle-sizes.txt
+
+      - name: Upload bundle analysis
+        uses: actions/upload-artifact@v4
+        with:
+          name: bundle-analysis
+          path: |
+            client/bundle-report.html
+            client/bundle-sizes.txt
+
+      - name: Comment bundle size on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            try {
+              const bundleSizes = fs.readFileSync('client/bundle-sizes.txt', 'utf8');
+              const comment = `## 📦 Bundle Size Analysis\n\n\`\`\`\n${bundleSizes}\n\`\`\`\n\nBundle analysis complete!`;
+
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+            } catch (error) {
+              console.log('Could not read bundle sizes:', error);
+            }
+
+  # Cross-browser compatibility check
+  compatibility-check:
+    name: Cross-Browser Compatibility
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: client/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./client
+        run: npm ci
+
+      - name: Check browser compatibility
+        working-directory: ./client
+        run: |
+          npx @babel/preset-env --debug
+          npx browserslist --coverage=US
+
+      - name: Run compatibility tests
+        working-directory: ./client
+        run: |
+          npm run test:run -- --reporter=verbose || true

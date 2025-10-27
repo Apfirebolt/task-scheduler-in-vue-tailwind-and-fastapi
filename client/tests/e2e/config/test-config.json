@@ -1,0 +1,109 @@
+{
+  "testSuites": {
+    "smoke": [
+      "home-page.spec.ts",
+      "task-management.spec.ts"
+    ],
+    "regression": [
+      "home-page.spec.ts",
+      "task-management.spec.ts",
+      "scheduler.spec.ts",
+      "responsive-design.spec.ts",
+      "accessibility.spec.ts"
+    ],
+    "accessibility": [
+      "accessibility.spec.ts"
+    ],
+    "responsive": [
+      "responsive-design.spec.ts"
+    ],
+    "error-handling": [
+      "error-handling.spec.ts"
+    ],
+    "all": [
+      "*.spec.ts"
+    ]
+  },
+  "environments": {
+    "development": {
+      "baseUrl": "http://localhost:5173",
+      "timeout": 30000,
+      "retries": 0,
+      "workers": 1
+    },
+    "staging": {
+      "baseUrl": "http://localhost:8080",
+      "timeout": 60000,
+      "retries": 2,
+      "workers": 2
+    },
+    "production": {
+      "baseUrl": "https://your-production-url.com",
+      "timeout": 60000,
+      "retries": 3,
+      "workers": 3
+    }
+  },
+  "thresholds": {
+    "performance": {
+      "domContentLoaded": 3000,
+      "loadComplete": 5000,
+      "firstContentfulPaint": 2000
+    },
+    "accessibility": {
+      "colorContrast": 4.5,
+      "touchTargetSize": 44
+    }
+  },
+  "reporting": {
+    "html": {
+      "enabled": true,
+      "outputFolder": "playwright-report"
+    },
+    "json": {
+      "enabled": true,
+      "outputFile": "test-results/results.json"
+    },
+    "junit": {
+      "enabled": false,
+      "outputFile": "test-results/junit.xml"
+    }
+  },
+  "screenshots": {
+    "enabled": true,
+    "onFailure": true,
+    "onSuccess": false,
+    "outputFolder": "test-results/screenshots"
+  },
+  "videos": {
+    "enabled": true,
+    "onFailure": true,
+    "onSuccess": false,
+    "outputFolder": "test-results/videos"
+  },
+  "traces": {
+    "enabled": true,
+    "onFailure": true,
+    "onSuccess": false,
+    "outputFolder": "test-results/traces"
+  },
+  "apiMocking": {
+    "enabled": false,
+    "defaultResponse": {
+      "status": 200,
+      "contentType": "application/json"
+    }
+  },
+  "networkConditions": {
+    "slow3G": {
+      "downloadThroughput": 64000,
+      "uploadThroughput": 64000,
+      "latency": 400
+    },
+    "fast3G": {
+      "downloadThroughput": 204800,
+      "uploadThroughput": 96000,
+      "latency": 150
+    }
+  }
+}

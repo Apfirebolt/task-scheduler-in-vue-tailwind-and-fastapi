@@ -1,0 +1,541 @@
+name: Test Reporting & Analytics
+
+on:
+  workflow_run:
+    workflows: ["Backend Tests", "Frontend Tests", "E2E Tests", "CI"]
+    types:
+      - completed
+  schedule:
+    # Generate weekly test analytics report on Sundays at 4 AM UTC
+    - cron: '0 4 * * 0'
+  workflow_dispatch:
+
+jobs:
+  test-analytics:
+    name: Test Analytics & Reporting
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion != 'skipped'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download workflow artifacts
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            // Create results directory
+            if (!fs.existsSync('test-results')) {
+              fs.mkdirSync('test-results', { recursive: true });
+            }
+
+            // Get artifacts from the triggering workflow
+            const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.event.workflow_run.id,
+            });
+
+            // Download test-related artifacts
+            for (const artifact of artifacts.data.artifacts) {
+              if (artifact.name.includes('test') ||
+                  artifact.name.includes('coverage') ||
+                  artifact.name.includes('e2e') ||
+                  artifact.name.includes('backend') ||
+                  artifact.name.includes('frontend')) {
+
+                console.log(`Downloading artifact: ${artifact.name}`);
+
+                const download = await github.rest.actions.downloadArtifact({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  artifact_id: artifact.id,
+                  archive_format: 'zip',
+                });
+
+                require('fs').writeFileSync(`${artifact.name}.zip`, Buffer.from(download.data));
+              }
+            }
+
+      - name: Extract artifacts
+        run: |
+          mkdir -p extracted-artifacts
+          for zipfile in *.zip; do
+            if [ -f "$zipfile" ]; then
+              echo "Extracting $zipfile"
+              unzip -q "$zipfile" -d extracted-artifacts/
+            fi
+          done
+
+      - name: Install Python for analytics
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install analytics dependencies
+        run: |
+          pip install pandas matplotlib seaborn plotly jinja2
+
+      - name: Generate test analytics
+        run: |
+          python3 << 'EOF'
+          import json
+          import os
+          import pandas as pd
+          from pathlib import Path
+          from datetime import datetime
+
+          def extract_test_results():
+              results = {
+                  'timestamp': datetime.now().isoformat(),
+                  'total_tests': 0,
+                  'passed_tests': 0,
+                  'failed_tests': 0,
+                  'skipped_tests': 0,
+                  'error_tests': 0,
+                  'coverage': {},
+                  'performance': {},
+                  'suites': {}
+              }
+
+              # Parse JUnit XML results
+              for root, dirs, files in os.walk('extracted-artifacts'):
+                  for file in files:
+                      if file.endswith('.xml'):
+                          try:
+                              # Simple XML parsing for test results
+                              with open(os.path.join(root, file), 'r') as f:
+                                  content = f.read()
+
+                              # Extract test counts using regex
+                              import re
+                              tests_match = re.search(r'tests="(\d+)"', content)
+                              failures_match = re.search(r'failures="(\d+)"', content)
+                              errors_match = re.search(r'errors="(\d+)"', content)
+                              skipped_match = re.search(r'skipped="(\d+)"', content)
+
+                              if tests_match:
+                                  test_count = int(tests_match.group(1))
+                                  failure_count = int(failures_match.group(1)) if failures_match else 0
+                                  error_count = int(errors_match.group(1)) if errors_match else 0
+                                  skipped_count = int(skipped_match.group(1)) if skipped_match else 0
+
+                                  results['total_tests'] += test_count
+                                  results['failed_tests'] += failure_count
+                                  results['error_tests'] += error_count
+                                  results['skipped_tests'] += skipped_count
+
+                              suite_name = file.replace('.xml', '')
+                              results['suites'][suite_name] = {
+                                  'total': test_count if tests_match else 0,
+                                  'failures': failure_count,
+                                  'errors': error_count,
+                                  'skipped': skipped_count
+                              }
+                          except Exception as e:
+                              print(f"Error parsing {file}: {e}")
+
+              # Parse coverage results
+              for root, dirs, files in os.walk('extracted-artifacts'):
+                  for file in files:
+                      if file == 'coverage.json' or file.endswith('-coverage.json'):
+                          try:
+                              with open(os.path.join(root, file), 'r') as f:
+                                  coverage_data = json.load(f)
+                                  if 'total' in coverage_data:
+                                      results['coverage'][file] = coverage_data['total']
+                          except Exception as e:
+                              print(f"Error parsing coverage {file}: {e}")
+
+              results['passed_tests'] = results['total_tests'] - results['failed_tests'] - results['error_tests'] - results['skipped_tests']
+
+              return results
+
+          def generate_html_report(results):
+              html_template = """
+              <!DOCTYPE html>
+              <html>
+              <head>
+                  <title>Test Analytics Report</title>
+                  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                  <style>
+                      body { font-family: Arial, sans-serif; margin: 20px; }
+                      .metric-card {
+                          background: #f5f5f5;
+                          padding: 20px;
+                          margin: 10px;
+                          border-radius: 8px;
+                          display: inline-block;
+                          min-width: 200px;
+                      }
+                      .chart-container {
+                          margin: 20px 0;
+                          padding: 20px;
+                          background: white;
+                          border-radius: 8px;
+                          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                      }
+                      .success { color: #28a745; }
+                      .warning { color: #ffc107; }
+                      .danger { color: #dc3545; }
+                  </style>
+              </head>
+              <body>
+                  <h1>🧪 Test Analytics Dashboard</h1>
+                  <p><strong>Generated:</strong> {timestamp}</p>
+
+                  <div class="metrics-overview">
+                      <div class="metric-card">
+                          <h3>Total Tests</h3>
+                          <h2>{total_tests}</h2>
+                      </div>
+                      <div class="metric-card">
+                          <h3>Passed</h3>
+                          <h2 class="success">{passed_tests}</h2>
+                      </div>
+                      <div class="metric-card">
+                          <h3>Failed</h3>
+                          <h2 class="danger">{failed_tests}</h2>
+                      </div>
+                      <div class="metric-card">
+                          <h3>Success Rate</h3>
+                          <h2>{success_rate}%</h2>
+                      </div>
+                  </div>
+
+                  <div class="chart-container">
+                      <h3>Test Results Distribution</h3>
+                      <canvas id="resultsChart" width="400" height="200"></canvas>
+                  </div>
+
+                  <div class="chart-container">
+                      <h3>Test Suite Results</h3>
+                      <canvas id="suiteChart" width="400" height="200"></canvas>
+                  </div>
+
+                  <h2>📊 Detailed Suite Results</h2>
+                  <table border="1" style="border-collapse: collapse; width: 100%;">
+                      <tr>
+                          <th>Suite</th>
+                          <th>Total</th>
+                          <th>Passed</th>
+                          <th>Failed</th>
+                          <th>Errors</th>
+                          <th>Skipped</th>
+                          <th>Success Rate</th>
+                      </tr>
+                      {suite_rows}
+                  </table>
+
+                  <script>
+                      // Test Results Chart
+                      const resultsCtx = document.getElementById('resultsChart').getContext('2d');
+                      new Chart(resultsCtx, {{
+                          type: 'doughnut',
+                          data: {{
+                              labels: ['Passed', 'Failed', 'Errors', 'Skipped'],
+                              datasets: [{{
+                                  data: [{passed_tests}, {failed_tests}, {error_tests}, {skipped_tests}],
+                                  backgroundColor: ['#28a745', '#dc3545', '#fd7e14', '#6c757d']
+                              }}]
+                          }}
+                      }});
+
+                      // Suite Results Chart
+                      const suiteCtx = document.getElementById('suiteChart').getContext('2d');
+                      new Chart(suiteCtx, {{
+                          type: 'bar',
+                          data: {{
+                              labels: {suite_labels},
+                              datasets: [{{
+                                  label: 'Total Tests',
+                                  data: {suite_totals},
+                                  backgroundColor: '#007bff'
+                              }}, {{
+                                  label: 'Failures',
+                                  data: {suite_failures},
+                                  backgroundColor: '#dc3545'
+                              }}]
+                          }}
+                      }});
+                  </script>
+              </body>
+              </html>
+              """
+
+              # Calculate success rate
+              success_rate = 0
+              if results['total_tests'] > 0:
+                  success_rate = round((results['passed_tests'] / results['total_tests']) * 100, 2)
+
+              # Prepare suite data
+              suite_rows = ""
+              suite_labels = []
+              suite_totals = []
+              suite_failures = []
+
+              for suite_name, suite_data in results['suites'].items():
+                  suite_success_rate = 0
+                  if suite_data['total'] > 0:
+                      suite_success_rate = round(((suite_data['total'] - suite_data['failures'] - suite_data['errors']) / suite_data['total']) * 100, 2)
+
+                  suite_rows += f"""
+                  <tr>
+                      <td>{suite_name}</td>
+                      <td>{suite_data['total']}</td>
+                      <td>{suite_data['total'] - suite_data['failures'] - suite_data['errors'] - suite_data['skipped']}</td>
+                      <td class="danger">{suite_data['failures']}</td>
+                      <td class="warning">{suite_data['errors']}</td>
+                      <td>{suite_data['skipped']}</td>
+                      <td>{suite_success_rate}%</td>
+                  </tr>
+                  """
+
+                  suite_labels.append(f"'{suite_name}'")
+                  suite_totals.append(suite_data['total'])
+                  suite_failures.append(suite_data['failures'])
+
+              html_content = html_template.format(
+                  timestamp=results['timestamp'],
+                  total_tests=results['total_tests'],
+                  passed_tests=results['passed_tests'],
+                  failed_tests=results['failed_tests'],
+                  error_tests=results['error_tests'],
+                  skipped_tests=results['skipped_tests'],
+                  success_rate=success_rate,
+                  suite_rows=suite_rows,
+                  suite_labels=f"[{', '.join(suite_labels)}]",
+                  suite_totals=suite_totals,
+                  suite_failures=suite_failures
+              )
+
+              with open('test-analytics-dashboard.html', 'w') as f:
+                  f.write(html_content)
+
+          # Main execution
+          if __name__ == "__main__":
+              results = extract_test_results()
+
+              # Save raw results
+              with open('test-results.json', 'w') as f:
+                  json.dump(results, f, indent=2)
+
+              # Generate HTML report
+              generate_html_report(results)
+
+              print("Test analytics report generated successfully!")
+              print(f"Total tests: {results['total_tests']}")
+              print(f"Passed: {results['passed_tests']}")
+              print(f"Failed: {results['failed_tests']}")
+          EOF
+
+      - name: Generate trend analysis
+        run: |
+          # Create historical data tracking
+          mkdir -p trend-data
+
+          # Store current results for trend analysis
+          if [ -f "test-results.json" ]; then
+            cp test-results.json "trend-data/$(date +%Y%m%d-%H%M%S).json"
+          fi
+
+          # Generate trend report (simplified)
+          cat > trend-analysis.md << EOF
+          # 📈 Test Trend Analysis
+
+          ## Latest Test Results
+          \`\`\`json
+          $(cat test-results.json | head -20)
+          \`\`\`
+
+          ## Historical Data Points
+          $(find trend-data/ -name "*.json" | wc -l) data points collected.
+
+          EOF
+
+      - name: Create test badge
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            let testResults;
+            try {
+              testResults = JSON.parse(fs.readFileSync('test-results.json', 'utf8'));
+            } catch (e) {
+              console.log('No test results found');
+              return;
+            }
+
+            const totalTests = testResults.total_tests || 0;
+            const passedTests = testResults.passed_tests || 0;
+            const successRate = totalTests > 0 ? Math.round((passedTests / totalTests) * 100) : 0;
+
+            // Determine badge color
+            let color = 'critical';
+            if (successRate >= 95) color = 'brightgreen';
+            else if (successRate >= 90) color = 'green';
+            else if (successRate >= 80) color = 'yellow';
+            else if (successRate >= 70) color = 'orange';
+            else if (successRate >= 60) color = 'red';
+
+            const badgeUrl = `https://img.shields.io/badge/tests-${successRate}%25-${color}`;
+            console.log(`Test badge URL: ${badgeUrl}`);
+
+            // Create badge data for README
+            fs.writeFileSync('test-badge.json', JSON.stringify({
+              url: badgeUrl,
+              successRate: successRate,
+              totalTests: totalTests,
+              passedTests: passedTests
+            }, null, 2));
+
+      - name: Upload analytics report
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-analytics-report
+          path: |
+            test-analytics-dashboard.html
+            test-results.json
+            trend-analysis.md
+            test-badge.json
+            trend-data/
+          retention-days: 90
+
+      - name: Deploy analytics dashboard to GitHub Pages
+        if: github.ref == 'refs/heads/main'
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./
+          publish_branch: gh-pages
+          keep_files: true
+          destination_dir: test-analytics
+
+      - name: Comment PR/Commit with analytics summary
+        if: github.event_name == 'workflow_run'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            let comment = '## 📊 Test Analytics Report\n\n';
+
+            if (fs.existsSync('test-results.json')) {
+              const results = JSON.parse(fs.readFileSync('test-results.json', 'utf8'));
+
+              const successRate = results.total_tests > 0 ?
+                Math.round((results.passed_tests / results.total_tests) * 100) : 0;
+
+              comment += `### 🎯 Test Results Summary\n`;
+              comment += `- **Total Tests**: ${results.total_tests}\n`;
+              comment += `- **Passed**: ${results.passed_tests}\n`;
+              comment += `- **Failed**: ${results.failed_tests}\n`;
+              comment += `- **Success Rate**: ${successRate}%\n\n`;
+
+              // Add status emoji
+              if (successRate >= 95) {
+                comment += '✅ **Excellent test performance!**\n';
+              } else if (successRate >= 90) {
+                comment += '✅ **Good test performance**\n';
+              } else if (successRate >= 80) {
+                comment += '⚠️ **Test performance needs attention**\n';
+              } else {
+                comment += '❌ **Poor test performance - immediate action required**\n';
+              }
+
+              comment += '\n📈 [View detailed analytics dashboard](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/test-analytics/test-analytics-dashboard.html)\n';
+            } else {
+              comment += 'No test results available for this run.\n';
+            }
+
+            comment += '\n---\n*Generated by Test Analytics workflow*';
+
+            // Try to find the PR or issue associated with this workflow run
+            try {
+              const pulls = await github.rest.pulls.list({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: 'open'
+              });
+
+              // Find PR associated with the head SHA
+              const headSha = context.event.workflow_run.head_sha;
+              const relatedPR = pulls.data.find(pr => pr.head.sha === headSha);
+
+              if (relatedPR) {
+                await github.rest.issues.createComment({
+                  issue_number: relatedPR.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  body: comment
+                });
+                console.log(`Commented on PR #${relatedPR.number}`);
+              }
+            } catch (error) {
+              console.log('Could not post comment to PR:', error.message);
+            }
+
+  # Weekly test report generation
+  weekly-test-report:
+    name: Weekly Test Report
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate weekly report
+        run: |
+          cat > weekly-test-report.md << EOF
+          # 📅 Weekly Test Report - $(date +%Y-%m-%d)
+
+          ## Executive Summary
+          This report provides a comprehensive overview of the test performance and quality metrics for the week.
+
+          ## Test Coverage Trends
+          - Backend coverage: [Data from coverage reports]
+          - Frontend coverage: [Data from coverage reports]
+          - E2E test pass rate: [Data from E2E results]
+
+          ## Quality Metrics
+          - Code quality score: [From pylint/ESLint results]
+          - Security vulnerabilities: [From security scans]
+          - Performance benchmarks: [From performance tests]
+
+          ## Recommendations
+          - [Automated recommendations based on test results]
+
+          ## Next Steps
+          - [Action items for the team]
+
+          ---
+          *Generated on $(date)*
+          EOF
+
+      - name: Create GitHub Issue for weekly report
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            const reportContent = fs.readFileSync('weekly-test-report.md', 'utf8');
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `📊 Weekly Test Report - ${new Date().toISOString().split('T')[0]}`,
+              body: reportContent,
+              labels: ['test-report', 'weekly']
+            });
+
+      - name: Upload weekly report
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-test-report-$(date +%Y%m%d)
+          path: weekly-test-report.md
+          retention-days: 30

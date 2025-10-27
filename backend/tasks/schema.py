@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from typing import Optional
 from pydantic import BaseModel
 
@@ -8,7 +8,8 @@ class TaskBase(BaseModel):
     title: str
     description: str
     status: str
-    dueDate: date
+    createdDate: Optional[datetime]
+    dueDate: datetime
 
     class Config:
         orm_mode = True
@@ -18,7 +19,7 @@ class TaskUpdate(BaseModel):
     title: Optional[str]
     description: Optional[str]
     status: Optional[str]
-    dueDate: Optional[date]
+    dueDate: Optional[datetime]
 
     class Config:
         orm_mode = True
@@ -29,8 +30,8 @@ class TaskList(BaseModel):
     title: str
     description: str
     status: str
-    createdDate: date
-    dueDate: date
+    createdDate: datetime
+    dueDate: datetime
 
     class Config:
         orm_mode = True
