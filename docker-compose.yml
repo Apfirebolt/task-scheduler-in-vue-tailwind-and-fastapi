@@ -1,0 +1,56 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:15
+    container_name: taskscheduler-db
+    environment:
+      POSTGRES_USER: taskscheduler_user
+      POSTGRES_PASSWORD: taskpassword
+      POSTGRES_DB: taskdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+  web:
+    build: .
+    container_name: taskscheduler-web
+    environment:
+      - DATABASE_USERNAME=taskscheduler_user
+      - DATABASE_PASSWORD=taskpassword
+      - DATABASE_HOST=db
+      - DATABASE_PORT=5432
+      - DATABASE_NAME=taskdb
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+  alembic:
+    build: .
+    container_name: taskscheduler-alembic
+    depends_on:
+      - db
+    environment:
+      - DATABASE_USERNAME=taskscheduler_user
+      - DATABASE_PASSWORD=taskpassword
+      - DATABASE_HOST=db
+      - DATABASE_PORT=5432
+      - DATABASE_NAME=taskdb
+    command: >
+      /bin/bash -c "sleep 5 && alembic upgrade head"
+    volumes:
+      - .:/app
+    working_dir: /app
+
+  client:
+    build:
+      context: ./client
+    container_name: taskscheduler-client
+    ports:
+      - "8080:80"
+    depends_on:
+      - web
+
+volumes:
+  db_data:
