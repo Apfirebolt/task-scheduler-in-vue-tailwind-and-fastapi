@@ -92,13 +92,11 @@ Mobile menu view, a sidebar opens which displays menu items on smaller screens.
 
 ## ⚙️ Docker Configuration
 
-- **Services:**
 	- `db`: Uses official PostgreSQL 15 image, persistent volume `db_data`
 	- `web`: FastAPI backend, environment variables for DB connection
 	- `alembic`: Runs Alembic migrations after DB is ready
 	- `client`: Builds and serves Vue app on port 8080
 
-- **Environment Variables:**
 	- Database credentials and connection info are set for backend and Alembic containers.
 	- Default values:
 		- `DATABASE_USERNAME=taskscheduler_user`
@@ -107,13 +105,42 @@ Mobile menu view, a sidebar opens which displays menu items on smaller screens.
 		- `DATABASE_PORT=5432`
 		- `DATABASE_NAME=taskdb`
 
-- **Volumes:**
 	- `db_data`: Persists PostgreSQL data
 
-- **Dependencies:**
 	- `web` and `alembic` depend on `db`
 	- `client` depends on `web`
 
+## 🗂️ Docker Compose Architecture
+
+Below is a Mermaid diagram showing how the Docker Compose services connect:
+
+```mermaid
+graph TD
+    db[(PostgreSQL DB)]
+    web[FastAPI Backend]
+    alembic[Alembic Migrations]
+    client[Vue.js Frontend]
+
+    db --> web
+    db --> alembic
+    web --> client
+
+    alembic -.-> db
+    web -.-> db
+    client -.-> web
+
+    subgraph Volumes
+        db_data[(db_data)]
+    end
+    db_data --> db
+```
+
+**Explanation:**
+- `db` (PostgreSQL) is used by both `web` (FastAPI backend) and `alembic` (for migrations).
+- `web` connects to `db` and serves the API, which is consumed by `client` (Vue.js frontend).
+- `alembic` waits for `db` to be ready, then runs migrations.
+- `client` depends on `web` to be running.
+- The `db_data` volume persists database data.
 ## ⚙️ Backend Database Configuration
 
 The backend uses environment variables to configure the PostgreSQL database connection. You can set these variables in your environment or in a `.env` file before starting the FastAPI server:
