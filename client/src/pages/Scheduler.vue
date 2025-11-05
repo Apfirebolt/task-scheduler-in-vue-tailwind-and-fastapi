@@ -94,55 +94,87 @@ const currentMonthAndYear = computed(() => {
   <Loader v-if="isLoading" />
   <div
     v-else
-    class="container bg-light mx-auto text-dark p-3"
-    data-aos="zoom-in"
-    style="background-image: url('https://storage.pixteller.com/designs/designs-images/2019-03-27/05/simple-background-backgrounds-passion-simple-1-5c9b95c3a34f9.png'); background-size: cover; background-position: center;"
+    class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6"
+    data-aos="fade-in"
   >
-    <div
-      v-if="errorMessage"
-      class="text-center bg-tertiary text-bold text-lg my-2 p-3"
-    >
-      <p>
-        {{ errorMessage }}
-      </p>
-    </div>
-    <h1 class="text-red-400 text-3xl my-3 text-center">SCHEDULER</h1>
-    <div class="flex items-center justify-between">
-      <button
-        className="bg-secondary hover:bg-gray-900 text-white font-bold py-2 px-4 rounded"
-        @click="previousMonth"
-      >
-        Previous Month
-      </button>
-      <p className="font-bold text-2xl text-red-400">
-        {{ currentMonthAndYear }}
-      </p>
-      <button
-        className="bg-secondary hover:bg-gray-900 text-white font-bold py-2 px-4 rounded"
-        @click="nextMonth"
-      >
-        Next Month
-      </button>
-    </div>
-    <div
-      className="grid sm:grid-cols-2 md:grid-cols:4 lg:grid-cols-7 px-2 gap-2 my-5"
-    >
+    <div class="max-w-7xl mx-auto">
+      <!-- Error Message -->
       <div
-        v-for="(item, index) in monthDays"
-        class="shadow-lg rounded-md px-4 py-2 bg-primary text-light text-semibold text-lg"
+        v-if="errorMessage"
+        class="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg"
       >
-        <p>
-          {{ item.date }}
-        </p>
+        <p class="font-medium">{{ errorMessage }}</p>
+      </div>
+
+      <!-- Header -->
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
+        <h1 class="text-3xl font-bold text-slate-800 text-center mb-6">Task Scheduler</h1>
+        
+        <!-- Navigation -->
+        <div class="flex items-center justify-between">
+          <button
+            class="flex items-center px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white font-medium rounded-lg transition-colors duration-200"
+            @click="previousMonth"
+          >
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            Previous
+          </button>
+          
+          <h2 class="text-2xl font-semibold text-slate-700">
+            {{ currentMonthAndYear }}
+          </h2>
+          
+          <button
+            class="flex items-center px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white font-medium rounded-lg transition-colors duration-200"
+            @click="nextMonth"
+          >
+            Next
+            <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Calendar Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4">
         <div
-          v-for="(task, index) in item.tasks"
-          class="max-w-sm rounded overflow-hidden shadow-lg bg-gray-800 my-2"
+          v-for="(item, index) in monthDays"
+          :key="index"
+          class="bg-white rounded-lg shadow-sm border border-slate-200 p-4 min-h-[200px] hover:shadow-md transition-shadow duration-200"
         >
-          <div class="px-6 py-4">
-            <div class="font-bold text-xl mb-2">{{ task.title }}</div>
-            <p class="text-gray-100 text-base">
-              {{ task.description }}
+          <!-- Date Header -->
+          <div class="border-b border-slate-100 pb-2 mb-3">
+            <p class="font-semibold text-slate-700 text-sm">
+              {{ item.date }}
             </p>
+          </div>
+          
+          <!-- Tasks -->
+          <div class="space-y-2">
+            <div
+              v-for="(task, taskIndex) in item.tasks"
+              :key="taskIndex"
+              class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-3 hover:shadow-sm transition-shadow duration-200"
+            >
+              <h3 class="font-medium text-slate-800 text-sm mb-1 line-clamp-1">
+                {{ task.title }}
+              </h3>
+              <p class="text-slate-600 text-xs line-clamp-2">
+                {{ task.description }}
+              </p>
+              <div class="mt-2 flex items-center">
+                <span class="inline-block w-2 h-2 bg-blue-400 rounded-full mr-2"></span>
+                <span class="text-xs text-slate-500">Task</span>
+              </div>
+            </div>
+            
+            <!-- Empty State -->
+            <div v-if="item.tasks.length === 0" class="text-center py-4">
+              <p class="text-slate-400 text-xs">No tasks scheduled</p>
+            </div>
           </div>
         </div>
       </div>

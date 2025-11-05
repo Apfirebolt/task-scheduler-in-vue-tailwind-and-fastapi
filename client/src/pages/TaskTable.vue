@@ -99,157 +99,118 @@ onMounted(() => {
         {{ sortByParams }}
       </p>
     </div>
-    <h1 class="text-tertiary bg-white py-2 text-3xl my-3 text-center">TASKS</h1>
-    <div class="flex flex-col">
-      <div class="overflow-x-auto sm:-mx-6 lg:-mx-8">
-        <div class="inline-block min-w-full py-2 sm:px-6 lg:px-8">
-          <div class="overflow-hidden">
-            <table class="min-w-full text-left text-sm font-light">
-              <thead class="border-b font-medium dark:border-neutral-500">
-                <tr>
-                  <th scope="col" class="px-6 py-4">#</th>
-                  <th scope="col" class="px-6 py-4" @click="sortByParam('title')">
-                    Title
-                    <svg v-if="sortingParams.name === 'title' && sortingParams.reverse"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke-width="1.5"
-                      stroke="currentColor"
-                      class="w-6 h-6"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="m4.5 5.25 7.5 7.5 7.5-7.5m-15 6 7.5 7.5 7.5-7.5"
-                      />
-                    </svg>
-
-                    <svg v-if="sortingParams.name === 'title' && !sortingParams.reverse"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke-width="1.5"
-                      stroke="currentColor"
-                      class="w-6 h-6"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="m4.5 18.75 7.5-7.5 7.5 7.5"
-                      />
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="m4.5 12.75 7.5-7.5 7.5 7.5"
-                      />
-                    </svg>
-                  </th>
-                  <th scope="col" class="px-6 py-4" @click="sortByParam('description')">
-                    Description
-                    <svg v-if="sortingParams.name === 'description' && sortingParams.reverse"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke-width="1.5"
-                      stroke="currentColor"
-                      class="w-6 h-6"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="m4.5 5.25 7.5 7.5 7.5-7.5m-15 6 7.5 7.5 7.5-7.5"
-                      />
-                    </svg>
-
-                    <svg v-if="sortingParams.name === 'description' && !sortingParams.reverse"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke-width="1.5"
-                      stroke="currentColor"
-                      class="w-6 h-6"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="m4.5 18.75 7.5-7.5 7.5 7.5"
-                      />
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="m4.5 12.75 7.5-7.5 7.5 7.5"
-                      />
-                    </svg>
-                  </th>
-                  <th scope="col" class="px-6 py-4 flex justify-around">
-                    Due Date
-                    <svg
-                      @click="sortByParam('dueDate')"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke-width="1.5"
-                      stroke="currentColor"
-                      class="w-6 h-6"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="m4.5 5.25 7.5 7.5 7.5-7.5m-15 6 7.5 7.5 7.5-7.5"
-                      />
-                    </svg>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td class="whitespace-nowrap px-6 py-4 font-medium"></td>
-                  <td class="whitespace-nowrap px-6 py-4 font-medium">
-                    <input
-                      type="text"
-                      id="first_name"
-                      v-model="title"
-                      class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                      placeholder="Search Title"
-                      required
-                    />
-                  </td>
-                  <td class="whitespace-nowrap px-6 py-4 font-medium">
-                    <input
-                      type="text"
-                      id="first_name"
-                      v-model="description"
-                      class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                      placeholder="Search Description"
-                      required
-                    />
-                  </td>
-                  <td class="whitespace-nowrap px-6 py-4 font-medium"></td>
-                </tr>
-                <tr
-                  v-for="(item, index) in filteredTasks"
-                  class="border-b dark:border-neutral-500"
-                  :key="index"
-                  @click="goToTaskDetail"
-                >
-                  <td class="whitespace-nowrap px-6 py-4 font-medium">
-                    {{ index + 1 }}
-                  </td>
-                  <td class="whitespace-nowrap px-6 py-4">
-                    {{ item.title }}
-                  </td>
-                  <td class="whitespace-nowrap px-6 py-4">
-                    {{ item.description }}
-                  </td>
-                  <td class="whitespace-nowrap px-6 py-4">
-                    {{ item.dueDate }}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+      <div class="bg-gradient-to-r from-primary to-secondary px-6 py-4">
+        <h1 class="text-white text-2xl font-bold text-center">Task Management</h1>
+      </div>
+      
+      <!-- Search Filters -->
+      <div class="p-6 bg-gray-50 border-b">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="relative">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Search by Title</label>
+            <input
+              type="text"
+              v-model="title"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              placeholder="Enter task title..."
+            />
+          </div>
+          <div class="relative">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Search by Description</label>
+            <input
+              type="text"
+              v-model="description"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              placeholder="Enter description..."
+            />
           </div>
         </div>
+      </div>
+
+      <!-- Table -->
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
+              <th 
+                @click="sortByParam('title')"
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors duration-150"
+              >
+                <div class="flex items-center space-x-1">
+                  <span>Title</span>
+                  <svg v-if="sortingParams.name === 'title'" 
+                    class="w-4 h-4 transition-transform duration-200"
+                    :class="{ 'rotate-180': !sortingParams.reverse }"
+                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </th>
+              <th 
+                @click="sortByParam('description')"
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors duration-150"
+              >
+                <div class="flex items-center space-x-1">
+                  <span>Description</span>
+                  <svg v-if="sortingParams.name === 'description'" 
+                    class="w-4 h-4 transition-transform duration-200"
+                    :class="{ 'rotate-180': !sortingParams.reverse }"
+                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </th>
+              <th 
+                @click="sortByParam('dueDate')"
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors duration-150"
+              >
+                <div class="flex items-center space-x-1">
+                  <span>Due Date</span>
+                  <svg v-if="sortingParams.name === 'dueDate'" 
+                    class="w-4 h-4 transition-transform duration-200"
+                    :class="{ 'rotate-180': !sortingParams.reverse }"
+                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr
+              v-for="(item, index) in filteredTasks"
+              :key="index"
+              @click="goToTaskDetail(item.id)"
+              class="hover:bg-gray-50 cursor-pointer transition-colors duration-150"
+            >
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                {{ index + 1 }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-gray-900">{{ item.title }}</div>
+              </td>
+              <td class="px-6 py-4">
+                <div class="text-sm text-gray-700 max-w-xs truncate">{{ item.description }}</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                {{ item.dueDate }}
+              </td>
+            </tr>
+            <tr v-if="filteredTasks.length === 0">
+              <td colspan="4" class="px-6 py-12 text-center text-gray-500">
+                <div class="flex flex-col items-center">
+                  <svg class="w-12 h-12 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <p class="text-lg font-medium">No tasks found</p>
+                  <p class="text-sm">Try adjusting your search criteria</p>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
