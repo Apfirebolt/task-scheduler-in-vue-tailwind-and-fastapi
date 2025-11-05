@@ -64,7 +64,7 @@ const resetSuccessMessage = () => {
 
 <template>
   <div 
-    class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4"
+    class="grow bg-gradient-to-br from-blue-50 to-indigo-100 py-8 px-4"
   >
     <div class="max-w-2xl mx-auto">
       <div v-if="successMessage" class="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg shadow-sm">
