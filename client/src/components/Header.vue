@@ -2,14 +2,23 @@
 import { ref } from "vue";
 
 const showSidebar = ref(false);
+const showMegaMenu = ref(false);
 
 const toggleSidebar = () => {
   showSidebar.value = !showSidebar.value;
 };
+
+const showMenu = () => {
+  showMegaMenu.value = true;
+};
+
+const hideMenu = () => {
+  showMegaMenu.value = false;
+};
 </script>
 
 <template>
-  <!-- component -->
+  <!-- Sidebar -->
   <transition
     enter-active-class="duration-300 ease-out"
     enter-from-class="translate -translate-x-64"
@@ -31,7 +40,6 @@ const toggleSidebar = () => {
             <li>
               <router-link
                 to="/"
-                href="#"
                 class="flex items-center p-2 text-light rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
               >
                 <svg
@@ -50,7 +58,6 @@ const toggleSidebar = () => {
             <li>
               <router-link
                 to="/scheduler"
-                href="#"
                 class="flex items-center p-2 text-light rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
               >
                 <svg
@@ -73,7 +80,6 @@ const toggleSidebar = () => {
             <li>
               <router-link
                 to="/add"
-                href="#"
                 class="flex items-center p-2 text-light rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
               >
                 <svg
@@ -95,7 +101,6 @@ const toggleSidebar = () => {
             <li>
               <router-link
                 to="/tasks"
-                href="#"
                 class="flex items-center p-2 text-light rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
               >
                 <svg
@@ -119,62 +124,219 @@ const toggleSidebar = () => {
       </aside>
     </div>
   </transition>
-  <header
-    class="header top-0 bg-gradient-to-r from-primary to-secondary shadow-md flex items-center justify-between px-8 py-02"
-  >
-    <!-- logo -->
-    <h1 class="w-3/12 text-light">
-      Task Scheduler
-    </h1>
 
-    <!-- navigation -->
-    <nav class="nav font-semibold text-lg text-light">
-      <ul class="md:flex items-center hidden">
-        <li
-          class="p-4 border-b-2 border-success border-opacity-0 hover:border-opacity-100 hover:text-success duration-200 cursor-pointer active"
-        >
-          <router-link to="/">Home</router-link>
-        </li>
-        <li
-          class="p-4 border-b-2 border-success border-opacity-0 hover:border-opacity-100 hover:text-success duration-200 cursor-pointer"
-        >
-          <router-link to="/scheduler">Scheduler</router-link>
-        </li>
-        <li
-          class="p-4 border-b-2 border-success border-opacity-0 hover:border-opacity-100 hover:text-success duration-200 cursor-pointer"
-        >
-          <router-link to="/add">Add Task</router-link>
-        </li>
-        <li
-          class="p-4 border-b-2 border-success border-opacity-0 hover:border-opacity-100 hover:text-success duration-200 cursor-pointer"
-        >
-          <router-link to="/tasks">Tasks</router-link>
-        </li>
-        <li
-          class="p-4 border-b-2 border-success border-opacity-0 hover:border-opacity-100 hover:text-success duration-200 cursor-pointer"
-        >
-          <router-link to="/task-table">Task Table</router-link>
-        </li>
-      </ul>
-      <ul class="flex items-center">
-        <li
-          @click="toggleSidebar"
-          class="p-4 border-b-2 md:hidden border-success border-opacity-0 hover:border-opacity-100 hover:text-success duration-200 cursor-pointer active"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="32"
-            height="32"
-            fill="currentColor"
-            class="bi bi-bar-chart"
-            viewBox="0 0 16 16"
+  <!-- Header -->
+  <header class="relative bg-white shadow-lg border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Logo -->
+        <div class="flex items-center">
+          <h1 class="text-2xl font-bold text-gray-900">Task Scheduler</h1>
+        </div>
+
+        <!-- Desktop Navigation -->
+        <nav class="hidden md:flex space-x-8">
+          <router-link
+            to="/"
+            class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
           >
-            <path
-              d="M4 11H2v3h2v-3zm5-4H7v7h2V7zm5-5v12h-2V2h2zm-2-1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1h-2zM6 7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7zm-5 4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1v-3z"
-            />
-          </svg>
-        </li>
-      </ul>
-    </nav>
+            Home
+          </router-link>
+          <router-link
+            to="/scheduler"
+            class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+          >
+            Scheduler
+          </router-link>
+          <router-link
+            to="/add"
+            class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+          >
+            Add Task
+          </router-link>
+
+          <!-- Mega Menu Trigger -->
+          <div class="relative" @mouseenter="showMenu" @mouseleave="hideMenu">
+            <button
+              class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center"
+            >
+              More
+              <svg class="ml-1 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fill-rule="evenodd"
+                  d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+            </button>
+
+            <!-- Mega Menu -->
+            <transition
+              enter-active-class="transition ease-out duration-200"
+              enter-from-class="opacity-0 translate-y-1"
+              enter-to-class="opacity-100 translate-y-0"
+              leave-active-class="transition ease-in duration-150"
+              leave-from-class="opacity-100 translate-y-0"
+              leave-to-class="opacity-0 translate-y-1"
+            >
+              <div
+                v-show="showMegaMenu"
+                class="absolute z-50 left-1/2 transform -translate-x-1/2 mt-3 px-2 w-screen max-w-md sm:px-0"
+              >
+                <div
+                  class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 overflow-hidden"
+                >
+                  <div
+                    class="relative grid gap-6 bg-white px-5 py-6 sm:gap-8 sm:p-8"
+                  >
+                    <router-link
+                      to="/tasks"
+                      class="-m-3 p-3 flex items-start rounded-lg hover:bg-gray-50 transition ease-in-out duration-150"
+                    >
+                      <div class="flex-shrink-0">
+                        <svg
+                          class="h-6 w-6 text-blue-600"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+                          />
+                        </svg>
+                      </div>
+                      <div class="ml-4">
+                        <p class="text-base font-medium text-gray-900">Tasks</p>
+                        <p class="mt-1 text-sm text-gray-500">
+                          View and manage all your tasks
+                        </p>
+                      </div>
+                    </router-link>
+
+                    <router-link
+                      to="/task-table"
+                      class="-m-3 p-3 flex items-start rounded-lg hover:bg-gray-50 transition ease-in-out duration-150"
+                    >
+                      <div class="flex-shrink-0">
+                        <svg
+                          class="h-6 w-6 text-blue-600"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M3 10h18M3 6h18m-9 8h9m-9 4h9m-9-8H3m0 4h6"
+                          />
+                        </svg>
+                      </div>
+                      <div class="ml-4">
+                        <p class="text-base font-medium text-gray-900">
+                          Task Table
+                        </p>
+                        <p class="mt-1 text-sm text-gray-500">
+                          Tabular view of all tasks
+                        </p>
+                      </div>
+                    </router-link>
+
+                    <a
+                      href="#"
+                      class="-m-3 p-3 flex items-start rounded-lg hover:bg-gray-50 transition ease-in-out duration-150"
+                    >
+                      <div class="flex-shrink-0">
+                        <svg
+                          class="h-6 w-6 text-blue-600"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                          />
+                        </svg>
+                      </div>
+                      <div class="ml-4">
+                        <p class="text-base font-medium text-gray-900">
+                          Analytics
+                        </p>
+                        <p class="mt-1 text-sm text-gray-500">
+                          View task performance and statistics
+                        </p>
+                      </div>
+                    </a>
+
+                    <a
+                      href="#"
+                      class="-m-3 p-3 flex items-start rounded-lg hover:bg-gray-50 transition ease-in-out duration-150"
+                    >
+                      <div class="flex-shrink-0">
+                        <svg
+                          class="h-6 w-6 text-blue-600"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                          />
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                          />
+                        </svg>
+                      </div>
+                      <div class="ml-4">
+                        <p class="text-base font-medium text-gray-900">
+                          Settings
+                        </p>
+                        <p class="mt-1 text-sm text-gray-500">
+                          Customize your task scheduler preferences
+                        </p>
+                      </div>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </transition>
+          </div>
+        </nav>
+
+        <!-- Mobile menu button -->
+        <div class="md:hidden">
+          <button
+            @click="toggleSidebar"
+            class="text-gray-700 hover:text-blue-600 p-2 rounded-md transition-colors duration-200"
+          >
+            <svg
+              class="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 6h16M4 12h16M4 18h16"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
   </header>
 </template>
