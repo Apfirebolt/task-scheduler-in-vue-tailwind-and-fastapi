@@ -3,9 +3,8 @@
 export const REGISTER_USER = 'accounts/REGISTER_USER';
 export const SET_LOADING = 'accounts/SET_LOADING';
 
-export const GET_TOKEN = 'accounts/GET_TOKEN';
-export const SET_TOKEN = 'accounts/SET_TOKEN';
-export const SET_TOKEN_ACTION = 'accounts/SET_TOKEN_ACTION';
+export const SET_PROFILE_DATA = 'accounts/SET_PROFILE_DATA';
+export const GET_PROFILE_DATA = 'accounts/GET_PROFILE_DATA';
 export const IS_USER_AUTHENTICATED = 'accounts/IS_USER_AUTHENTICATED';
 
 export const CHECK_USER_AUTHENTICATION = 'accounts/CHECK_USER_AUTHENTICATION';
