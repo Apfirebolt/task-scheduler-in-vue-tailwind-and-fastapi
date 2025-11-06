@@ -48,6 +48,43 @@ It has supoort for multi-user authentication.
 
 27/12/22 : Added Admin panel with support of being able to add users and tasks, modify any user or task for admin role user type.
 
+06/11/25 : Added test cases
+
+### Steps to add test cases
+
+```
+npm install -D vitest @vue/test-utils @vitejs/plugin-vue jsdom
+```
+
+Add a script for running test cases.
+
+```
+"scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest"  <-- Add this script
+  },
+```
+
+Make the following changes in the vite config file
+
+```Javascript
+import { defineConfig } from 'vite';
+import vue from '@vitejs/plugin-vue';
+
+export default defineConfig({
+  plugins: [vue()],
+  test: {
+    environment: 'jsdom',
+
+    include: ['**/*.test.js', '**/*.spec.js'],
+
+    watch: false,
+  },
+});
+```
+
 ## 📷 Screenshots
 
 The style might be a subject to change in the future for this project. But, as of now this is how few pages look like

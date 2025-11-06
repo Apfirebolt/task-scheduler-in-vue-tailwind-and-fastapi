@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.7.2",
@@ -26,9 +27,12 @@
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.3",
+    "@vue/test-utils": "^2.4.5",
     "autoprefixer": "^10.4.21",
+    "jsdom": "^24.0.0",
     "postcss": "^8.5.3",
     "tailwindcss": "^4.0.15",
-    "vite": "^6.2.2"
+    "vite": "^6.2.2",
+    "vitest": "^1.5.0"
   }
 }

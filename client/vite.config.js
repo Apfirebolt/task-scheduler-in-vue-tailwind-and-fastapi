@@ -11,4 +11,11 @@ export default defineConfig({
   build: {
     outDir: 'dist',
   },
+  test: {
+    environment: 'jsdom',
+
+    include: ['**/*.test.js', '**/*.spec.js'],
+
+    watch: false,
+  },
 });
