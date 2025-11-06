@@ -107,39 +107,65 @@ const currentMonthAndYear = computed(() => {
       </div>
 
       <!-- Header -->
-      <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
-        <h1 class="text-3xl font-bold text-slate-800 text-center mb-6">Task Scheduler</h1>
-        
+      <div
+        class="rounded-xl shadow-sm border border-slate-200 p-6 mb-6 bg-gradient-to-r from-primary to-secondary"
+      >
+        <h1 class="text-3xl font-bold text-white text-center mb-6">
+          Task Scheduler
+        </h1>
+
         <!-- Navigation -->
         <div class="flex items-center justify-between">
           <button
-            class="flex items-center px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white font-medium rounded-lg transition-colors duration-200"
+            class="flex items-center px-4 py-2 bg-white/20 hover:bg-white/30 text-white font-medium rounded-lg transition-colors duration-200 backdrop-blur-sm"
             @click="previousMonth"
           >
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            <svg
+              class="w-4 h-4 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 19l-7-7 7-7"
+              ></path>
             </svg>
             Previous
           </button>
-          
-          <h2 class="text-2xl font-semibold text-slate-700">
+
+          <h2 class="text-2xl font-semibold text-white">
             {{ currentMonthAndYear }}
           </h2>
-          
+
           <button
-            class="flex items-center px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white font-medium rounded-lg transition-colors duration-200"
+            class="flex items-center px-4 py-2 bg-white/20 hover:bg-white/30 text-white font-medium rounded-lg transition-colors duration-200 backdrop-blur-sm"
             @click="nextMonth"
           >
             Next
-            <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            <svg
+              class="w-4 h-4 ml-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5l7 7-7 7"
+              ></path>
             </svg>
           </button>
         </div>
       </div>
 
       <!-- Calendar Grid -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4">
+      <div
+        class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4"
+      >
         <div
           v-for="(item, index) in monthDays"
           :key="index"
@@ -151,26 +177,28 @@ const currentMonthAndYear = computed(() => {
               {{ item.date }}
             </p>
           </div>
-          
+
           <!-- Tasks -->
           <div class="space-y-2">
             <div
               v-for="(task, taskIndex) in item.tasks"
               :key="taskIndex"
-              class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-3 hover:shadow-sm transition-shadow duration-200"
+              class="bg-gradient-to-r text-light from-primary to-secondary border border-dark rounded-lg p-3 hover:shadow-sm transition-shadow duration-200"
             >
-              <h3 class="font-medium text-slate-800 text-sm mb-1 line-clamp-1">
+              <h3 class="font-medium text-sm mb-1 line-clamp-1">
                 {{ task.title }}
               </h3>
-              <p class="text-slate-600 text-xs line-clamp-2">
+              <p class="text-xs line-clamp-2">
                 {{ task.description }}
               </p>
               <div class="mt-2 flex items-center">
-                <span class="inline-block w-2 h-2 bg-blue-400 rounded-full mr-2"></span>
-                <span class="text-xs text-slate-500">Task</span>
+                <span
+                  class="inline-block w-2 h-2 bg-light rounded-full mr-2"
+                ></span>
+                <span>Task</span>
               </div>
             </div>
-            
+
             <!-- Empty State -->
             <div v-if="item.tasks.length === 0" class="text-center py-4">
               <p class="text-slate-400 text-xs">No tasks scheduled</p>
