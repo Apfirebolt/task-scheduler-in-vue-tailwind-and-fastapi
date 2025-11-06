@@ -1,8 +1,15 @@
 <script setup>
-import { ref } from "vue";
+import { ref, computed } from "vue";
+import { useStore } from "vuex";
+import * as types from "../store/modules/auth/authTypes";
 
+const store = useStore();
 const showSidebar = ref(false);
 const showMegaMenu = ref(false);
+
+const userProfile = computed(() => store.getters[types.GET_PROFILE_DATA]);
+
+const userName = computed(() => userProfile.value.user.username || userProfile.value.user.email || "Guest");
 
 const toggleSidebar = () => {
   showSidebar.value = !showSidebar.value;
@@ -14,6 +21,10 @@ const showMenu = () => {
 
 const hideMenu = () => {
   showMegaMenu.value = false;
+};
+
+const logOutUtil = () => {
+  store.dispatch(types.LOG_OUT);
 };
 </script>
 
@@ -132,6 +143,9 @@ const hideMenu = () => {
         <!-- Logo -->
         <div class="flex items-center">
           <h1 class="text-2xl font-bold text-gray-900">Task Scheduler</h1>
+          <div v-if="userProfile" class="ml-4 text-sm text-gray-600">
+            <span>Welcome, {{ userName }}</span>
+          </div>
         </div>
 
         <!-- Desktop Navigation -->
@@ -246,6 +260,7 @@ const hideMenu = () => {
                     </router-link>
 
                     <router-link
+                      v-if="!userProfile"
                       to="/login"
                       class="-m-3 p-3 flex items-start rounded-lg hover:bg-gray-50 transition ease-in-out duration-150"
                     >
@@ -274,7 +289,7 @@ const hideMenu = () => {
                       </div>
                     </router-link>
 
-                    <router-link
+                    <router-link v-if="!userProfile"
                       to="/register"
                       class="-m-3 p-3 flex items-start rounded-lg hover:bg-gray-50 transition ease-in-out duration-150"
                     >
@@ -302,6 +317,36 @@ const hideMenu = () => {
                         </p>
                       </div>
                     </router-link>
+
+                    <button
+                      v-if="userProfile"
+                      @click="logOutUtil"
+                      class="-m-3 p-3 flex items-start rounded-lg hover:bg-gray-50 transition ease-in-out duration-150"
+                    >
+                      <div class="flex-shrink-0">
+                        <svg
+                          class="h-6 w-6 text-blue-600"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                          />
+                        </svg>
+                      </div>
+                      <div class="ml-4">
+                        <p class="text-base font-medium text-gray-900">
+                          Logout
+                        </p>
+                        <p class="mt-1 text-sm text-gray-500">
+                          Sign out of your account
+                        </p>
+                      </div>
+                    </button>
                   </div>
                 </div>
               </div>

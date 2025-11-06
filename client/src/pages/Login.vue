@@ -29,7 +29,7 @@ const store = useStore();
 const submitFormData = async () => {
   try {
     isLoading.value = true;
-    await store.dispatch(actionTypes.SET_TOKEN_ACTION, loginData.value);
+    await store.dispatch(actionTypes.SET_PROFILE_DATA, loginData.value);
     successMessage.value = "Login successful!";
     resetSuccessMessage();
     router.push({ name: "Home" });
