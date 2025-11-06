@@ -8,40 +8,59 @@ import { library } from "@fortawesome/fontawesome-svg-core";
 import {
   faUser,
   faLock,
+  faEye,
+  faEyeSlash,
   faEnvelope,
-  faIdCard,
 } from "@fortawesome/free-solid-svg-icons";
 
 const registerData = ref({
-  username: "",
-  firstName: "",
-  lastName: "",
+  name: "",
   email: "",
   password: "",
+  confirmPassword: "",
 });
 
 const router = useRouter();
 const successMessage = ref("");
 const errorMessage = ref("");
+const showPassword = ref(false);
+const showConfirmPassword = ref(false);
+const isLoading = ref(false);
 
 const submitFormData = async () => {
+  // Validate password match
+  if (registerData.value.password !== registerData.value.confirmPassword) {
+    errorMessage.value = "Passwords do not match.";
+    resetErrorMessage();
+    return;
+  }
+
+  isLoading.value = true;
   try {
     const responseData = await axios.post(
       "http://localhost:8000/auth/register",
-      registerData.value
+      {
+        name: registerData.value.name,
+        email: registerData.value.email,
+        password: registerData.value.password,
+      }
     );
     if (responseData) {
-      successMessage.value = "Registration successful!";
+      successMessage.value = "Registration successful! Please sign in.";
       resetSuccessMessage();
-      router.push({ name: "Login" });
+      setTimeout(() => {
+        router.push({ name: "Login" });
+      }, 2000);
     }
   } catch (err) {
-    errorMessage.value = "Registration failed. Please try again.";
+    errorMessage.value = err.response?.data?.detail || "Registration failed. Please try again.";
     resetErrorMessage();
+  } finally {
+    isLoading.value = false;
   }
 };
 
-library.add(faUser, faLock, faEnvelope, faIdCard);
+library.add(faUser, faLock, faEye, faEyeSlash, faEnvelope);
 
 const resetSuccessMessage = () => {
   setTimeout(() => {
@@ -59,6 +78,14 @@ const resetErrorMessage = () => {
   }, 3000);
 };
 
+const togglePasswordVisibility = () => {
+  showPassword.value = !showPassword.value;
+};
+
+const toggleConfirmPasswordVisibility = () => {
+  showConfirmPassword.value = !showConfirmPassword.value;
+};
+
 onMounted(() => {
   AOS.init();
 });
@@ -66,148 +93,242 @@ onMounted(() => {
 
 <template>
   <div
-    class="container mx-auto text-light min-h-screen flex items-center justify-center"
-    style="
-      background-image: url('https://storage.pixteller.com/designs/designs-images/2019-03-27/05/simple-background-backgrounds-passion-simple-1-5c9b95c3a34f9.png');
-      background-size: cover;
-      background-position: center;
-    "
+    class="container mx-auto grow bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center p-4"
   >
-    <div
-      v-if="successMessage"
-      class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white text-bold text-lg p-3 rounded"
-    >
-      <p>{{ successMessage }}</p>
-    </div>
-    <div
-      v-if="errorMessage"
-      class="fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-500 text-white text-bold text-lg p-3 rounded"
-    >
-      <p>{{ errorMessage }}</p>
-    </div>
+    <!-- Toast Messages -->
+    <Transition name="slide-down">
+      <div
+        v-if="successMessage"
+        class="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 bg-emerald-500 text-white px-6 py-3 rounded-lg shadow-lg border border-emerald-400"
+      >
+        <div class="flex items-center space-x-2">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path
+              fill-rule="evenodd"
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+              clip-rule="evenodd"
+            />
+          </svg>
+          <span class="font-medium">{{ successMessage }}</span>
+        </div>
+      </div>
+    </Transition>
 
-    <form
-      @submit.prevent="submitFormData"
-      class="w-full max-w-md mx-auto bg-white bg-opacity-90 p-8 rounded-lg shadow-lg"
+    <Transition name="slide-down">
+      <div
+        v-if="errorMessage"
+        class="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg border border-red-400"
+      >
+        <div class="flex items-center space-x-2">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path
+              fill-rule="evenodd"
+              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+              clip-rule="evenodd"
+            />
+          </svg>
+          <span class="font-medium">{{ errorMessage }}</span>
+        </div>
+      </div>
+    </Transition>
+
+    <!-- Register Card -->
+    <div
+      class="w-full max-w-md"
       data-aos="fade-up"
-      data-aos-duration="500"
-      data-aos-ease="ease"
+      data-aos-duration="600"
+      data-aos-ease="ease-out"
     >
-      <div class="text-center mb-6">
-        <h2 class="text-3xl font-bold text-gray-800">REGISTER</h2>
-      </div>
-
-      <div class="mb-4">
-        <label class="block text-gray-700 font-bold mb-2" for="username">
-          Username
-        </label>
-        <div class="relative">
-          <input
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline pr-10"
-            id="username"
-            type="text"
-            placeholder="Enter your username"
-            v-model="registerData.username"
-            required
-          />
-          <FontAwesomeIcon
-            :icon="['fas', 'user']"
-            class="absolute top-2 right-2 text-gray-500"
-          />
+      <form
+        @submit.prevent="submitFormData"
+        class="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 space-y-6"
+      >
+        <!-- Header -->
+        <div class="text-center space-y-2">
+          <div
+            class="w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-xl mx-auto flex items-center justify-center mb-4"
+          >
+            <FontAwesomeIcon
+              :icon="['fas', 'user']"
+              class="text-white text-2xl"
+            />
+          </div>
+          <h2 class="text-2xl font-bold text-gray-900">Create Account</h2>
+          <p class="text-gray-600">Sign up to get started with your account</p>
         </div>
-      </div>
 
-      <div class="mb-4">
-        <label class="block text-gray-700 font-bold mb-2" for="firstName">
-          First Name
-        </label>
-        <div class="relative">
-          <input
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline pr-10"
-            id="firstName"
-            type="text"
-            placeholder="Enter your first name"
-            v-model="registerData.firstName"
-            required
-          />
-          <FontAwesomeIcon
-            :icon="['fas', 'id-card']"
-            class="absolute top-2 right-2 text-gray-500"
-          />
+        <!-- Name Field -->
+        <div class="space-y-2">
+          <label class="block text-sm font-semibold text-gray-700" for="name">
+            Full Name
+          </label>
+          <div class="relative">
+            <input
+              class="w-full px-4 py-3 pl-11 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              id="name"
+              type="text"
+              placeholder="Enter your full name"
+              v-model="registerData.name"
+              required
+            />
+            <FontAwesomeIcon
+              :icon="['fas', 'user']"
+              class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+            />
+          </div>
         </div>
-      </div>
 
-      <div class="mb-4">
-        <label class="block text-gray-700 font-bold mb-2" for="lastName">
-          Last Name
-        </label>
-        <div class="relative">
-          <input
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline pr-10"
-            id="lastName"
-            type="text"
-            placeholder="Enter your last name"
-            v-model="registerData.lastName"
-            required
-          />
-          <FontAwesomeIcon
-            :icon="['fas', 'id-card']"
-            class="absolute top-2 right-2 text-gray-500"
-          />
+        <!-- Email Field -->
+        <div class="space-y-2">
+          <label class="block text-sm font-semibold text-gray-700" for="email">
+            Email Address
+          </label>
+          <div class="relative">
+            <input
+              class="w-full px-4 py-3 pl-11 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              id="email"
+              type="email"
+              placeholder="Enter your email"
+              v-model="registerData.email"
+              required
+            />
+            <FontAwesomeIcon
+              :icon="['fas', 'envelope']"
+              class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+            />
+          </div>
         </div>
-      </div>
 
-      <div class="mb-4">
-        <label class="block text-gray-700 font-bold mb-2" for="email">
-          Email
-        </label>
-        <div class="relative">
-          <input
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline pr-10"
-            id="email"
-            type="email"
-            placeholder="Enter your email"
-            v-model="registerData.email"
-            required
-          />
-          <FontAwesomeIcon
-            :icon="['fas', 'envelope']"
-            class="absolute top-2 right-2 text-gray-500"
-          />
+        <!-- Password Field -->
+        <div class="space-y-2">
+          <label
+            class="block text-sm font-semibold text-gray-700"
+            for="password"
+          >
+            Password
+          </label>
+          <div class="relative">
+            <input
+              class="w-full px-4 py-3 pl-11 pr-11 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              id="password"
+              :type="showPassword ? 'text' : 'password'"
+              placeholder="Enter your password"
+              v-model="registerData.password"
+              required
+            />
+            <FontAwesomeIcon
+              :icon="['fas', 'lock']"
+              class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+            />
+            <button
+              type="button"
+              @click="togglePasswordVisibility"
+              class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+            >
+              <FontAwesomeIcon
+                :icon="['fas', showPassword ? 'eye-slash' : 'eye']"
+              />
+            </button>
+          </div>
         </div>
-      </div>
 
-      <div class="mb-6">
-        <label class="block text-gray-700 font-bold mb-2" for="password">
-          Password
-        </label>
-        <div class="relative">
-          <input
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline pr-10"
-            id="password"
-            type="password"
-            placeholder="Enter your password"
-            v-model="registerData.password"
-            required
-          />
-          <FontAwesomeIcon
-            :icon="['fas', 'lock']"
-            class="absolute top-2 right-2 text-gray-500"
-          />
+        <!-- Confirm Password Field -->
+        <div class="space-y-2">
+          <label
+            class="block text-sm font-semibold text-gray-700"
+            for="confirmPassword"
+          >
+            Confirm Password
+          </label>
+          <div class="relative">
+            <input
+              class="w-full px-4 py-3 pl-11 pr-11 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              id="confirmPassword"
+              :type="showConfirmPassword ? 'text' : 'password'"
+              placeholder="Confirm your password"
+              v-model="registerData.confirmPassword"
+              required
+            />
+            <FontAwesomeIcon
+              :icon="['fas', 'lock']"
+              class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+            />
+            <button
+              type="button"
+              @click="toggleConfirmPasswordVisibility"
+              class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+            >
+              <FontAwesomeIcon
+                :icon="['fas', showConfirmPassword ? 'eye-slash' : 'eye']"
+              />
+            </button>
+          </div>
         </div>
-      </div>
 
-      <input
-        class="w-full shadow bg-blue-500 hover:bg-blue-700 transition-all duration-300 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-4 rounded cursor-pointer"
-        type="submit"
-        value="Register"
-      />
+        <!-- Register Button -->
+        <button
+          type="submit"
+          :disabled="isLoading"
+          class="w-full bg-gradient-to-r from-primary to-secondary hover:from-blue-600 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold py-3 px-4 rounded-xl shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 transform hover:-translate-y-0.5 disabled:hover:transform-none disabled:cursor-not-allowed"
+        >
+          <span v-if="!isLoading">Create Account</span>
+          <span v-else class="flex items-center justify-center space-x-2">
+            <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              ></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+            <span>Creating Account...</span>
+          </span>
+        </button>
 
-      <div class="text-center mt-4">
-        <router-link to="/login" class="text-blue-500 hover:text-blue-700">
-          Already have an account? Sign in
-        </router-link>
-      </div>
-    </form>
+        <!-- Divider -->
+        <div class="relative">
+          <div class="absolute inset-0 flex items-center">
+            <div class="w-full border-t border-gray-200"></div>
+          </div>
+          <div class="relative flex justify-center text-sm">
+            <span class="px-2 bg-white text-gray-500">or</span>
+          </div>
+        </div>
+
+        <!-- Sign In Link -->
+        <div class="text-center">
+          <router-link
+            to="/login"
+            class="text-blue-600 hover:text-blue-700 font-medium transition-colors duration-200"
+          >
+            Already have an account? <span class="underline">Sign in</span>
+          </router-link>
+        </div>
+      </form>
+    </div>
   </div>
 </template>
+
+<style scoped>
+.slide-down-enter-active,
+.slide-down-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-down-enter-from {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-20px);
+}
+
+.slide-down-leave-to {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-20px);
+}
+</style>
