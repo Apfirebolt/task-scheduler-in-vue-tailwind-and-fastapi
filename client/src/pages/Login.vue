@@ -5,6 +5,8 @@ import { useRouter } from "vue-router";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { library } from "@fortawesome/fontawesome-svg-core";
+import { useStore } from "vuex";
+import * as actionTypes from "../store/modules/auth/authTypes";
 import {
   faUser,
   faLock,
@@ -22,20 +24,15 @@ const successMessage = ref("");
 const errorMessage = ref("");
 const showPassword = ref(false);
 const isLoading = ref(false);
+const store = useStore();
 
 const submitFormData = async () => {
-  isLoading.value = true;
   try {
-    const responseData = await axios.post(
-      "http://localhost:8000/auth/login",
-      loginData.value
-    );
-    if (responseData) {
-      successMessage.value = "Login successful!";
-      resetSuccessMessage();
-      localStorage.setItem("token", responseData.data.token);
-      router.push({ name: "Dashboard" });
-    }
+    isLoading.value = true;
+    await store.dispatch(actionTypes.SET_TOKEN_ACTION, loginData.value);
+    successMessage.value = "Login successful!";
+    resetSuccessMessage();
+    router.push({ name: "Home" });
   } catch (err) {
     errorMessage.value = "Invalid credentials. Please try again.";
     resetErrorMessage();

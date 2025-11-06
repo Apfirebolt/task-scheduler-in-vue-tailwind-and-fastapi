@@ -14,8 +14,6 @@ class User(Base):
     role = Column(String(50), nullable=True, default='user')
     password = Column(String(255))
 
-    movies = relationship("Movie", back_populates="owner")
-
     def __init__(self, username, email, role, password, *args, **kwargs):
         self.username = username
         self.email = email
@@ -31,5 +29,4 @@ class User(Base):
             "username": self.username,
             "email": self.email,
             "role": self.role,
-            "movies": [movie.to_dict() for movie in self.movies],
         }

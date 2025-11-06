@@ -192,7 +192,7 @@ describe('Login Component', () => {
             
             expect(wrapper.vm.successMessage).toBe('Login successful!')
             expect(localStorage.getItem('token')).toBe(mockToken)
-            expect(mockRouter.push).toHaveBeenCalledWith({ name: 'Dashboard' })
+            expect(mockRouter.push).toHaveBeenCalledWith({ name: 'Home' })
         })
 
         it('displays success message', async () => {

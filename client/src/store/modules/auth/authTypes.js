@@ -1,6 +1,7 @@
 // Auth constants
 
 export const REGISTER_USER = 'accounts/REGISTER_USER';
+export const SET_LOADING = 'accounts/SET_LOADING';
 
 export const GET_TOKEN = 'accounts/GET_TOKEN';
 export const SET_TOKEN = 'accounts/SET_TOKEN';

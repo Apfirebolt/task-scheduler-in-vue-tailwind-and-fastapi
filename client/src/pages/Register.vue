@@ -3,6 +3,8 @@ import { ref, onMounted } from "vue";
 import AOS from "aos";
 import { useRouter } from "vue-router";
 import axios from "axios";
+import { useStore } from "vuex";
+import * as actionTypes from "../store/modules/auth/authTypes";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import {
@@ -14,13 +16,16 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 
 const registerData = ref({
-  name: "",
+  username: "",
   email: "",
   password: "",
   confirmPassword: "",
 });
 
+console.log('Action types ', actionTypes.REGISTER_USER);
+
 const router = useRouter();
+const store = useStore();
 const successMessage = ref("");
 const errorMessage = ref("");
 const showPassword = ref(false);
@@ -28,33 +33,25 @@ const showConfirmPassword = ref(false);
 const isLoading = ref(false);
 
 const submitFormData = async () => {
-  // Validate password match
-  if (registerData.value.password !== registerData.value.confirmPassword) {
-    errorMessage.value = "Passwords do not match.";
-    resetErrorMessage();
-    return;
-  }
-
   isLoading.value = true;
   try {
-    const responseData = await axios.post(
-      "http://localhost:8000/auth/register",
-      {
-        name: registerData.value.name,
-        email: registerData.value.email,
-        password: registerData.value.password,
-      }
-    );
-    if (responseData) {
-      successMessage.value = "Registration successful! Please sign in.";
-      resetSuccessMessage();
-      setTimeout(() => {
-        router.push({ name: "Login" });
-      }, 2000);
+    const response = await store.dispatch(actionTypes.REGISTER_USER, registerData.value);
+    if (response && response.data && response.data.message) {
+      successMessage.value = response.data.message;
+    } else {
+      successMessage.value = "Registration successful! Redirecting to login...";
     }
+    resetSuccessMessage();
+    setTimeout(() => {
+      router.push({ name: "Login" });
+    }, 2000);
   } catch (err) {
-    errorMessage.value = err.response?.data?.detail || "Registration failed. Please try again.";
+    errorMessage.value =
+      err.response && err.response.data && err.response.data.message
+        ? err.response.data.message
+        : "Registration failed. Please try again.";
     resetErrorMessage();
+    console.log('Error ', err);
   } finally {
     isLoading.value = false;
   }
@@ -159,16 +156,16 @@ onMounted(() => {
 
         <!-- Name Field -->
         <div class="space-y-2">
-          <label class="block text-sm font-semibold text-gray-700" for="name">
-            Full Name
+          <label class="block text-sm font-semibold text-gray-700" for="username">
+            Username
           </label>
           <div class="relative">
             <input
               class="w-full px-4 py-3 pl-11 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-              id="name"
+              id="username"
               type="text"
-              placeholder="Enter your full name"
-              v-model="registerData.name"
+              placeholder="Enter your Username"
+              v-model="registerData.username"
               required
             />
             <FontAwesomeIcon

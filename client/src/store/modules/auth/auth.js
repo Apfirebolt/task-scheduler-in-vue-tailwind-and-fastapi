@@ -4,9 +4,12 @@ import router from "../../../routes";
 
 const state = {
   token: null,
+  loading: false,
   isAuthenticated: false,
   profileData: null,
 };
+
+const apiUrl = "http://localhost:8000/api/auth";
 
 const getters = {
   [types.GET_TOKEN]: (state) => state.token,
@@ -31,34 +34,45 @@ const mutations = {
 
 const actions = {
   [types.REGISTER_USER]: ({ commit }, payload) => {
-    const url = "http://localhost:5000/api/auth/register";
-    axios
-      .post(url, payload)
-      .then((response) => {})
-      .catch((err) => {});
+    const url = `${apiUrl}/register`;
+    commit(types.SET_LOADING, true);
+    try {
+      axios.post(url, payload).then((response) => {
+        commit(types.SET_LOADING, false);
+        router.push({ name: "Login" });
+      });
+    } catch (err) {
+      commit(types.SET_LOADING, false);
+      console.error(err);
+    }
   },
 
   // Action for logging in user
   [types.SET_TOKEN_ACTION]: ({ commit }, payload) => {
-    const url = "http://localhost:5000/api/auth/login";
-    axios
-      .post(url, payload)
-      .then((response) => {
-        commit(types.SET_TOKEN, response.data.token);
-        localStorage.setItem("Token", response.data.token);
-        localStorage.setItem("userId", response.data._id);
-        router.push({ name: "Dashboard" });
-      })
-      .catch((err) => {
-        console.error(err);
+    const url = `${apiUrl}/login`;
+    try {
+      axios.post(url, payload).then((response) => {
+        const token = response.data.access_token;
+        commit(types.SET_TOKEN, token);
+        commit(types.SET_PROFILE_DATA, response.data.user);
+        try {
+          localStorage.setItem("Token", token);
+          localStorage.setItem("user", JSON.stringify(response.data.user));
+        } catch (err) {
+          console.error(err);
+        }
+        router.push({ name: "Home" });
       });
+    } catch (err) {
+      console.error(err);
+    }
   },
 
   // Log out functionality
   [types.LOG_OUT]: ({ commit }) => {
     commit(types.LOG_OUT_SUCCESS);
     try {
-      localStorage.removeItem("Token");
+      localStorage.removeItem("user");
       localStorage.removeItem("userId");
     } catch (err) {
       console.error(err);
