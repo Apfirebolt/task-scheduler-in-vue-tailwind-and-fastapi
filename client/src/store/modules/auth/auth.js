@@ -21,6 +21,7 @@ const state = {
       return null;
     }
   })(),
+  profile: null,
 };
 
 const apiUrl = "http://localhost:8000/api/auth";
@@ -28,6 +29,7 @@ const apiUrl = "http://localhost:8000/api/auth";
 const getters = {
   [types.IS_USER_AUTHENTICATED]: (state) => state.isAuthenticated,
   [types.GET_PROFILE_DATA]: (state) => state.profileData,
+  [types.GET_PROFILE]: (state) => state.profile,
 };
 
 const mutations = {
@@ -38,6 +40,9 @@ const mutations = {
   [types.SET_PROFILE_DATA]: (state, payload) => {
     state.profileData = payload;
   },
+  [types.SET_PROFILE_API]: (state, payload) => {
+    state.profile = payload;
+  }
 };
 
 const actions = {
@@ -64,6 +69,26 @@ const actions = {
         try {
           // store complete response in cookies
           Cookie.set("user", JSON.stringify(response.data));
+        } catch (err) {
+          console.error(err);
+        }
+        router.push({ name: "Home" });
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  },
+
+  // Action for logging in user
+  [types.GET_PROFILE_API_ACTION]: ({ commit, state }) => {
+    const url = `${apiUrl}/profile`;
+    try {
+      const token = state.profileData?.access_token;
+      console.log('State profile data:', token);
+      axios.get(url, { headers: { Authorization: `Bearer ${token}` } }).then((response) => {
+        commit(types.SET_PROFILE_API, response.data);
+        try {
+          commit(types.SET_PROFILE_DATA, response.data);
         } catch (err) {
           console.error(err);
         }

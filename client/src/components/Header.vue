@@ -318,6 +318,36 @@ const logOutUtil = () => {
                       </div>
                     </router-link>
 
+                    <router-link
+                      v-if="userProfile"
+                      to="/profile"
+                      class="-m-3 p-3 flex items-start rounded-lg hover:bg-gray-50 transition ease-in-out duration-150"
+                    >
+                      <div class="flex-shrink-0">
+                        <svg
+                          class="h-6 w-6 text-blue-600"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                          />
+                        </svg>
+                      </div>
+                      <div class="ml-4">
+                        <p class="text-base font-medium text-gray-900">
+                          Profile
+                        </p>
+                        <p class="mt-1 text-sm text-gray-500">
+                          View and edit your profile
+                        </p>
+                      </div>
+                    </router-link>
+
                     <button
                       v-if="userProfile"
                       @click="logOutUtil"
