@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
 from backend.tasks import router as task_router
+from backend.auth import router as auth_router
 
 app = FastAPI(title="Fast API Scheduler",
     docs_url="/docs",
@@ -22,6 +23,7 @@ app.add_middleware(
 )
 
 app.include_router(task_router.router)
+app.include_router(auth_router.router)
 
 
 def write_notification(email: str, message=""):
@@ -34,23 +36,6 @@ def write_notification(email: str, message=""):
 async def send_notification(email: str, background_tasks: BackgroundTasks):
     background_tasks.add_task(write_notification, email, message="some notification from the back-ground task")
     return {"message": "Notification sent in the background"}
-
-
-# app.mount("/client", StaticFiles(directory="client/dist"), name="static")
-
-# templates = Jinja2Templates(directory="client/dist")
-
-
-# @app.get("/{full_path:path}")
-# async def serve_vue_app(request: Request, full_path: str):
-#     """Serve the vue app bootstrapped by Vite
-#     """
-#     return templates.TemplateResponse("index.html", {"request": request})
-
-
-# @app.get("/")
-# async def root():
-#     return {"message": "Hello World"}
 
 
 if __name__ == "__main__":

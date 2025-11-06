@@ -1,5 +1,6 @@
 import { createApp } from "vue";
 import "aos/dist/aos.css";
+import store from './store';
 import "animate.css";
 import "./index.css";
 import App from "./App.vue";
@@ -11,5 +12,6 @@ app.config.globalProperties.$user = {
     email: "john@gmail.com"
 }
 app.use(router);
+app.use(store);
 app.mount("#app");
 
