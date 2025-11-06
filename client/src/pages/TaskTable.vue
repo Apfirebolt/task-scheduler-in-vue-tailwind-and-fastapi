@@ -101,14 +101,18 @@ onMounted(() => {
     </div>
     <div class="bg-white rounded-lg shadow-lg overflow-hidden">
       <div class="bg-gradient-to-r from-primary to-secondary px-6 py-4">
-        <h1 class="text-white text-2xl font-bold text-center">Task Management</h1>
+        <h1 class="text-white text-2xl font-bold text-center">
+          Task Management
+        </h1>
       </div>
-      
+
       <!-- Search Filters -->
       <div class="p-6 bg-gray-50 border-b">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="relative">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Search by Title</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Search by Title</label
+            >
             <input
               type="text"
               v-model="title"
@@ -117,7 +121,9 @@ onMounted(() => {
             />
           </div>
           <div class="relative">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Search by Description</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Search by Description</label
+            >
             <input
               type="text"
               v-model="description"
@@ -133,46 +139,77 @@ onMounted(() => {
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
-              <th 
+              <th
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                #
+              </th>
+              <th
                 @click="sortByParam('title')"
                 class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors duration-150"
               >
                 <div class="flex items-center space-x-1">
                   <span>Title</span>
-                  <svg v-if="sortingParams.name === 'title'" 
+                  <svg
+                    v-if="sortingParams.name === 'title'"
                     class="w-4 h-4 transition-transform duration-200"
                     :class="{ 'rotate-180': !sortingParams.reverse }"
-                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </div>
               </th>
-              <th 
+              <th
                 @click="sortByParam('description')"
                 class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors duration-150"
               >
                 <div class="flex items-center space-x-1">
                   <span>Description</span>
-                  <svg v-if="sortingParams.name === 'description'" 
+                  <svg
+                    v-if="sortingParams.name === 'description'"
                     class="w-4 h-4 transition-transform duration-200"
                     :class="{ 'rotate-180': !sortingParams.reverse }"
-                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </div>
               </th>
-              <th 
+              <th
                 @click="sortByParam('dueDate')"
                 class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors duration-150"
               >
                 <div class="flex items-center space-x-1">
                   <span>Due Date</span>
-                  <svg v-if="sortingParams.name === 'dueDate'" 
+                  <svg
+                    v-if="sortingParams.name === 'dueDate'"
                     class="w-4 h-4 transition-transform duration-200"
                     :class="{ 'rotate-180': !sortingParams.reverse }"
-                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </div>
               </th>
@@ -185,14 +222,20 @@ onMounted(() => {
               @click="goToTaskDetail(item.id)"
               class="hover:bg-gray-50 cursor-pointer transition-colors duration-150"
             >
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+              <td
+                class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
+              >
                 {{ index + 1 }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-gray-900">{{ item.title }}</div>
+                <div class="text-sm font-medium text-gray-900">
+                  {{ item.title }}
+                </div>
               </td>
               <td class="px-6 py-4">
-                <div class="text-sm text-gray-700 max-w-xs truncate">{{ item.description }}</div>
+                <div class="text-sm text-gray-700 max-w-xs truncate">
+                  {{ item.description }}
+                </div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                 {{ item.dueDate }}
@@ -201,8 +244,18 @@ onMounted(() => {
             <tr v-if="filteredTasks.length === 0">
               <td colspan="4" class="px-6 py-12 text-center text-gray-500">
                 <div class="flex flex-col items-center">
-                  <svg class="w-12 h-12 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  <svg
+                    class="w-12 h-12 text-gray-300 mb-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
                   </svg>
                   <p class="text-lg font-medium">No tasks found</p>
                   <p class="text-sm">Try adjusting your search criteria</p>

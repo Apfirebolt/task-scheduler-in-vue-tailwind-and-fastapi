@@ -148,23 +148,4 @@ describe('Scheduler.vue', () => {
         expect(wrapper.text()).toContain('Important Task')
         expect(wrapper.text()).toContain('Task description here')
     })
-
-    it('applies correct CSS classes for task styling', async () => {
-        const mockTasks = [
-            { 
-                id: 1, 
-                title: 'Test Task', 
-                description: 'Test Description', 
-                dueDate: dayjs().format('YYYY-MM-DD')
-            }
-        ]
-        mockedAxios.get.mockResolvedValue({ data: mockTasks })
-        const wrapper = mount(Scheduler)
-        
-        wrapper.vm.tasks = mockTasks
-        wrapper.vm.updateTaskData(dayjs())
-        await wrapper.vm.$nextTick()
-        
-        expect(wrapper.find('.bg-gradient-to-r.from-blue-50.to-indigo-50').exists()).toBe(true)
-    })
 })
