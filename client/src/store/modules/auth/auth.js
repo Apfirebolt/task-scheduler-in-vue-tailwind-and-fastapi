@@ -84,15 +84,8 @@ const actions = {
     const url = `${apiUrl}/profile`;
     try {
       const token = state.profileData?.access_token;
-      console.log('State profile data:', token);
       axios.get(url, { headers: { Authorization: `Bearer ${token}` } }).then((response) => {
         commit(types.SET_PROFILE_API, response.data);
-        try {
-          commit(types.SET_PROFILE_DATA, response.data);
-        } catch (err) {
-          console.error(err);
-        }
-        router.push({ name: "Home" });
       });
     } catch (err) {
       console.error(err);
