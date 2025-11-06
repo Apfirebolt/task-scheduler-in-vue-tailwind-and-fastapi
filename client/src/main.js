@@ -5,13 +5,14 @@ import "animate.css";
 import "./index.css";
 import App from "./App.vue";
 import router from "./routes";
+import * as authTypes from './store/modules/auth/authTypes';
 
 const app = createApp(App);
-app.config.globalProperties.$user = {
-    name: "John Doe",
-    email: "john@gmail.com"
-}
+
 app.use(router);
 app.use(store);
-app.mount("#app");
 
+store.dispatch(authTypes.CHECK_USER_AUTHENTICATION).then(() => {
+    console.log("User authentication checked.");
+    app.mount("#app");
+});

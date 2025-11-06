@@ -9,7 +9,12 @@ const showMegaMenu = ref(false);
 
 const userProfile = computed(() => store.getters[types.GET_PROFILE_DATA]);
 
-const userName = computed(() => userProfile.value.user.username || userProfile.value.user.email || "Guest");
+const userName = computed(() => {
+  if (!userProfile.value || !userProfile.value.user) {
+    return "Guest";
+  }
+  return userProfile.value.user.username || userProfile.value.user.email || "Guest";
+});
 
 const toggleSidebar = () => {
   showSidebar.value = !showSidebar.value;
